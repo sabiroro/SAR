@@ -1,0 +1,5 @@
+# To avoid Eclipse's metadata
+workspace/.metadata/
+
+# To avoid adding class files
+*.class
