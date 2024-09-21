@@ -1,13 +1,18 @@
 package tests;
 
+import java.nio.ByteBuffer;
+import java.text.RuleBasedCollator;
+
 import implementation.Broker;
 import implementation.Channel;
+import implementation.DisconnectedException;
 import implementation.Task;
 
 public class Test {
 	public static void main(String[] args) {
 		try {
 			test1();
+			test1bis();
 			test2();
 			test3();
 			System.out.println("All tests have been done successfully !");
@@ -43,6 +48,33 @@ public class Test {
 		System.out.println("Test 1 done !");
 	}
 
+	// Test with read/write exception because of disconnection
+	public static void test1bis() throws Exception {
+		System.out.println("Test 1 bis in progress...");
+
+		Broker b1 = new Broker("Device1");
+		Channel c1 = b1.accept(6969);
+
+		Broker b2 = new Broker("Device2");
+		Channel c2 = b2.connect("Device1", 6969);
+
+		c1.write("hello world".getBytes(), 0, 5);
+		c1.read(new byte[20], 0, 3);
+
+		c1.disconnect();
+
+		try {
+			c1.read(new byte[5], 0, 3);
+			throw new Exception("The channel shoudl not be readable");
+		} catch (DisconnectedException e) {
+			System.out.println("Disconnected exception caugth !");
+		}
+
+		c2.disconnect();
+
+		System.out.println("Test 1 bis done !");
+	}
+
 	// Try a simple echo
 	public static void test2() throws Exception {
 		System.out.println("Test 2 in progress...");
@@ -60,16 +92,16 @@ public class Test {
 			public void run() {
 				// Write message
 				int number_of_bytes_wrote = 0;
-				while (number_of_bytes_wrote != -1) {
-					number_of_bytes_wrote = serv_channel.write(byte_message_sent, number_of_bytes_wrote,
+				while (number_of_bytes_wrote != byte_message_sent.length) {
+					number_of_bytes_wrote += serv_channel.write(byte_message_sent, number_of_bytes_wrote,
 							byte_message_sent.length - number_of_bytes_wrote);
 				}
 				System.out.println("Message wrote by client !");
 
 				// Read echo message
 				int number_of_bytes_read = 0;
-				while (number_of_bytes_read != -1) {
-					number_of_bytes_read = client_channel.read(byte_message_echo_read, number_of_bytes_read,
+				while (number_of_bytes_read != byte_message_sent.length) {
+					number_of_bytes_read += client_channel.read(byte_message_echo_read, number_of_bytes_read,
 							byte_message_sent.length - number_of_bytes_read);
 				}
 				System.out.println("Echo message wrote by client !");
@@ -82,16 +114,16 @@ public class Test {
 			public void run() {
 				// Read message
 				int number_of_bytes_read = 0;
-				while (number_of_bytes_read != -1) {
-					number_of_bytes_read = serv_channel.read(byte_message_received, number_of_bytes_read,
+				while (number_of_bytes_read != byte_message_received.length) {
+					number_of_bytes_read += serv_channel.read(byte_message_received, number_of_bytes_read,
 							byte_message_received.length - number_of_bytes_read);
 				}
 				System.out.println("Message read by serveur !");
 
 				// Send echo message
 				int number_of_bytes_wrote = 0;
-				while (number_of_bytes_wrote != -1) {
-					number_of_bytes_wrote = client_channel.write(byte_message_received, number_of_bytes_wrote,
+				while (number_of_bytes_wrote != byte_message_sent.length) {
+					number_of_bytes_wrote += client_channel.write(byte_message_received, number_of_bytes_wrote,
 							byte_message_sent.length - number_of_bytes_wrote);
 				}
 				System.out.println("Echo message wrote by server !");
@@ -132,16 +164,16 @@ public class Test {
 			public void run() {
 				// Write message
 				int number_of_bytes_wrote = 0;
-				while (number_of_bytes_wrote != -1) {
-					number_of_bytes_wrote = serv_channel.write(byte_message_sent1, number_of_bytes_wrote,
+				while (number_of_bytes_wrote != byte_message_sent1.length) {
+					number_of_bytes_wrote += serv_channel.write(byte_message_sent1, number_of_bytes_wrote,
 							byte_message_sent1.length - number_of_bytes_wrote);
 				}
 				System.out.println("Message wrote by client 1 !");
 
 				// Read echo message
 				int number_of_bytes_read = 0;
-				while (number_of_bytes_read != -1) {
-					number_of_bytes_read = serv_channel.read(byte_message_echo_read1, number_of_bytes_read,
+				while (number_of_bytes_read != byte_message_sent1.length) {
+					number_of_bytes_read += serv_channel.read(byte_message_echo_read1, number_of_bytes_read,
 							byte_message_sent1.length - number_of_bytes_read);
 				}
 				System.out.println("Echo message wrote by client 1 !");
@@ -158,16 +190,16 @@ public class Test {
 			public void run() {
 				// Write message
 				int number_of_bytes_wrote = 0;
-				while (number_of_bytes_wrote != -1) {
-					number_of_bytes_wrote = serv_channel.write(byte_message_sent2, number_of_bytes_wrote,
+				while (number_of_bytes_wrote != byte_message_sent2.length) {
+					number_of_bytes_wrote += serv_channel.write(byte_message_sent2, number_of_bytes_wrote,
 							byte_message_sent2.length - number_of_bytes_wrote);
 				}
 				System.out.println("Message wrote by client 2 !");
 
 				// Read echo message
 				int number_of_bytes_read = 0;
-				while (number_of_bytes_read != -1) {
-					number_of_bytes_read = serv_channel.read(byte_message_echo_read2, number_of_bytes_read,
+				while (number_of_bytes_read != byte_message_sent2.length) {
+					number_of_bytes_read += serv_channel.read(byte_message_echo_read2, number_of_bytes_read,
 							byte_message_sent2.length - number_of_bytes_read);
 				}
 				System.out.println("Echo message wrote by client 2 !");
@@ -180,45 +212,43 @@ public class Test {
 			public void run() {
 				// Read message
 				int number_of_bytes_read = 0;
-				while (number_of_bytes_read != -1) {
-					number_of_bytes_read = serv_channel.read(byte_message_received1, number_of_bytes_read,
+				while (number_of_bytes_read != byte_message_received1.length) {
+					number_of_bytes_read += serv_channel.read(byte_message_received1, number_of_bytes_read,
 							byte_message_received1.length - number_of_bytes_read);
 				}
 				System.out.println("Message (from client 1) read by serveur !");
 
 				// Send echo message
 				int number_of_bytes_wrote = 0;
-				while (number_of_bytes_wrote != -1) {
-					number_of_bytes_wrote = serv_channel.write(byte_message_received1, number_of_bytes_wrote,
+				while (number_of_bytes_wrote != byte_message_sent1.length) {
+					number_of_bytes_wrote += serv_channel.write(byte_message_received1, number_of_bytes_wrote,
 							byte_message_sent1.length - number_of_bytes_wrote);
 				}
 				System.out.println("Echo message (from client 1) wrote by server !");
 			}
 		};
-		
-		
+
 		byte[] byte_message_received2 = new byte[byte_message_sent2.length];
 		Runnable server_runnable2 = new Runnable() {
 			@Override
 			public void run() {
 				// Read message
 				int number_of_bytes_read = 0;
-				while (number_of_bytes_read != -1) {
-					number_of_bytes_read = serv_channel.read(byte_message_received2, number_of_bytes_read,
+				while (number_of_bytes_read != byte_message_received2.length) {
+					number_of_bytes_read += serv_channel.read(byte_message_received2, number_of_bytes_read,
 							byte_message_received2.length - number_of_bytes_read);
 				}
 				System.out.println("Message (from client 2) read by serveur !");
 
 				// Send echo message
 				int number_of_bytes_wrote = 0;
-				while (number_of_bytes_wrote != -1) {
-					number_of_bytes_wrote = serv_channel.write(byte_message_received2, number_of_bytes_wrote,
+				while (number_of_bytes_wrote != byte_message_sent2.length) {
+					number_of_bytes_wrote += serv_channel.write(byte_message_received2, number_of_bytes_wrote,
 							byte_message_sent2.length - number_of_bytes_wrote);
 				}
 				System.out.println("Echo message (from client 2) wrote by server !");
 			}
 		};
-		
 
 		// Write message (client 1)
 		Task t1 = new Task(client1, client_runnable1);
@@ -234,7 +264,7 @@ public class Test {
 		t2.join();
 		t3.join();
 		t4.join();
-		
+
 		if (byte_message_sent1.toString() == byte_message_echo_read1.toString())
 			throw new Exception("Client1's messages are not the same...");
 		if (byte_message_sent2.toString() == byte_message_echo_read2.toString())
@@ -245,5 +275,98 @@ public class Test {
 		client2_channel.disconnect();
 
 		System.out.println("Test 3 done !");
+	}
+
+	// Communication with length specified
+	private static void send(byte[] bytes, Channel channel) {
+		int remaining = bytes.length;
+		int offset = 0;
+		while (remaining != 0) {
+			int n = channel.write(bytes, offset, remaining);
+			offset += n;
+			remaining -= n;
+		}
+	}
+
+	private static void receive(byte[] bytes, Channel channel) throws DisconnectedException {
+		int remaining = bytes.length;
+		int offset = 0;
+		while (remaining != 0) {
+			int n = channel.read(bytes, offset, remaining);
+			offset += n;
+			remaining -= n;
+		}
+	}
+
+	public static void test4() throws Exception {
+		System.out.println("Test 4 in progress...");
+
+		Broker b1 = new Broker("Device1");
+		Channel c = b1.accept(6969);
+
+		Broker b2 = new Broker("Device2");
+		b2.connect("Device1", 6969);
+
+		byte[] msg_sent = "Salut c'est le Ro !".getBytes();
+		byte[] msg_received = new byte[msg_sent.length];
+		Runnable send_runnable = new Runnable() {
+
+			@Override
+			public void run() {
+				// Send size
+				int msg_size = msg_sent.length;
+				byte[] size_in_bytes = ByteBuffer.allocate(4).putInt(msg_size).array(); // To convert int to bytes array
+				send(size_in_bytes, c);
+
+				// Send message
+				send(msg_sent, c);
+
+				// Read echo message
+				try {
+					receive(msg_received, c);
+				} catch (DisconnectedException e) {
+					e.printStackTrace();
+				}
+			}
+		};
+
+		Runnable read_runnable = new Runnable() {
+
+			@Override
+			public void run() {
+				// Receive size
+				byte[] size_in_bytes = new byte[4]; // An int is 4 bytes
+				try {
+					receive(size_in_bytes, c);
+				} catch (DisconnectedException e1) {
+					e1.printStackTrace();
+				}
+				int size = ByteBuffer.wrap(size_in_bytes).getInt();
+
+				// Receive message
+				byte[] msg_get = new byte[size];
+				try {
+					receive(msg_get, c);
+				} catch (DisconnectedException e1) {
+					e1.printStackTrace();
+				}
+
+				// Send echo message
+				send(msg_get, c);
+			}
+		};
+
+		Task t1 = new Task(b1, send_runnable);
+		Task t2 = new Task(b2, read_runnable);
+		
+		t1.join();
+		t2.join();
+		c.disconnect();
+
+		if (msg_sent.toString() != msg_received.toString())
+			System.out.println("Messages are not the same...");
+		System.out.println(msg_sent.toString() + " is different than " + msg_received.toString());
+
+		System.out.println("Test 4 done !");
 	}
 }

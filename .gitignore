@@ -1,5 +1,14 @@
 # To avoid Eclipse's metadata
 workspace/.metadata/
 
+# To avoid binary files
+bin/
+
+# To avoid lessons and archives of the root (except workspace and git files/directory)
+/*
+!/workspace
+!/.gitignore
+!/.git
+
 # To avoid adding class files
 *.class
