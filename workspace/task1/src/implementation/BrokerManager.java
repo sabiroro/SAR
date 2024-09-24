@@ -4,7 +4,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class BrokerManager {
-	public static ConcurrentHashMap<String, Broker> buff; // Static manager to get all the local brokers
+	public static ConcurrentHashMap<String, Broker> buff = new ConcurrentHashMap<>(); // Static manager to get all the local brokers
 
 	public static ConcurrentMap<String, Broker> getBuff() { // Static method to get the buffer
 		return buff;

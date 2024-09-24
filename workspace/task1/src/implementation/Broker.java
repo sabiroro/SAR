@@ -16,6 +16,7 @@ public class Broker {
 
 	public Broker(String name) {
 		this.name = name;
+		this.rendez_vous = new ConcurrentHashMap<Integer, RdV>();
 		BrokerManager.put(name, this);
 	}
 
