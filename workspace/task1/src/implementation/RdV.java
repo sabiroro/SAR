@@ -32,26 +32,30 @@ public class RdV {
 		notifyAll(); // If accept is blocked
 
 		// Create an executor to manage the timeout
-		ExecutorService executor = Executors.newSingleThreadExecutor();
-		Callable<Boolean> callable = new Callable<Boolean>() {
-			@Override
-			public Boolean call() throws Exception {
-				// Wait the rendez-vous creation
-				while (channel_connect == null) {
-					wait();
-				}
-				return true;
-			}
-		};
-		// Create a future to execute the callable AND manage it
-		Future<Boolean> future = executor.submit(callable);
-		try {
-			executor.shutdown(); // Deny new connections
-			future.get(Broker.WAITING_TIME, TimeUnit.SECONDS); // Get result after a maximum waiting time
-		} catch (InterruptedException | ExecutionException e) {
-			e.printStackTrace();
-		} catch (TimeoutException e) {
-			return null; // Timed out
+//		ExecutorService executor = Executors.newSingleThreadExecutor();
+//		Callable<Boolean> callable = new Callable<Boolean>() {
+//			@Override
+//			public Boolean call() throws Exception {
+//				// Wait the rendez-vous creation
+//				while (channel_connect == null) {
+//					wait();
+//				}
+//				return true;
+//			}
+//		};
+//		// Create a future to execute the callable AND manage it
+//		Future<Boolean> future = executor.submit(callable);
+//		try {
+//			executor.shutdown(); // Deny new connections
+//			future.get(Broker.WAITING_TIME, TimeUnit.SECONDS); // Get result after a maximum waiting time
+//		} catch (InterruptedException | ExecutionException e) {
+//			e.printStackTrace();
+//		} catch (TimeoutException e) {
+//			return null; // Timed out
+//		}
+		
+		while (channel_connect == null) {
+			wait();
 		}
 
 		return channel_connect;
@@ -59,6 +63,7 @@ public class RdV {
 
 	public synchronized Channel accept(Broker b, int port) throws InterruptedException { // Broker expected a connection
 		this.waiting_queue.release(); // At each accept, a place is release in the waiting queue (semaphore)
+		
 		this.ba = b;
 		this.port = port;
 

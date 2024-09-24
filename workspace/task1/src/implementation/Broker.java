@@ -14,10 +14,12 @@ public class Broker {
 	String name;
 	ConcurrentHashMap<Integer, RdV> rendez_vous; // To store port and rendez-vous effective
 
-	public Broker(String name) {
+	public Broker(String name) throws Exception {
 		this.name = name;
 		this.rendez_vous = new ConcurrentHashMap<Integer, RdV>();
-		BrokerManager.put(name, this);
+		boolean name_put = BrokerManager.put(name, this);
+		if (!name_put)
+			throw new Exception("This name already exists");
 	}
 
 	public Channel accept(int port) throws InterruptedException {
@@ -35,26 +37,30 @@ public class Broker {
 			return null;
 
 		// Create an executor to manage the timeout
-		ExecutorService executor = Executors.newSingleThreadExecutor();
-		Callable<RdV> callable = new Callable<RdV>() {
-			@Override
-			public RdV call() throws Exception {
-				// Wait the rendez-vous creation
-				RdV rdv_target_callable = target_broker.getRendezVous(port);
-				return rdv_target_callable;
-			}
-		};
-		// Create a future to execute the callable AND manage it
-		Future<RdV> future = executor.submit(callable);
+//		ExecutorService executor = Executors.newSingleThreadExecutor();
+//		Callable<RdV> callable = new Callable<RdV>() {
+//			@Override
+//			public RdV call() throws Exception {
+//				// Wait the rendez-vous creation
+//				RdV rdv_target_callable = target_broker.getRendezVous(port);
+//				return rdv_target_callable;
+//			}
+//		};
+//		// Create a future to execute the callable AND manage it
+//		Future<RdV> future = executor.submit(callable);
+//		RdV rdv_target = null;
+//		try {
+//			executor.shutdown(); // Deny new connections
+//			rdv_target = future.get(WAITING_TIME, TimeUnit.SECONDS); // Get result after a maximum waiting time
+//		} catch (InterruptedException | ExecutionException e) {
+//			e.printStackTrace();
+//		} catch (TimeoutException e) {
+//			return null; // Timed out
+//		}
+		
 		RdV rdv_target = null;
-		try {
-			executor.shutdown(); // Deny new connections
-			rdv_target = future.get(WAITING_TIME, TimeUnit.SECONDS); // Get result after a maximum waiting time
-		} catch (InterruptedException | ExecutionException e) {
-			e.printStackTrace();
-		} catch (TimeoutException e) {
-			return null; // Timed out
-		}
+		while (rdv_target == null)
+			rdv_target = target_broker.getRendezVous(port); // TODO problème si pas encore créer
 
 		Channel channel = rdv_target.connect(this);
 		return channel;
