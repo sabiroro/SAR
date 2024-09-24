@@ -6,7 +6,7 @@ public class DisconnectedException extends Exception {
 	public DisconnectedException() {
 		super();
 	}
-	
+
 	public DisconnectedException(String reason) {
 		super(reason);
 	}
