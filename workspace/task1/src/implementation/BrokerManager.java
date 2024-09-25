@@ -1,17 +1,40 @@
 package implementation;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.HashMap;
 
 public class BrokerManager {
-	public static ConcurrentHashMap<String, Broker> buff = new ConcurrentHashMap<>(); // Static manager to get all the local brokers
+	public static BrokerManager self; // To create a singleton
+	private HashMap<String, Broker> brokers = new HashMap<>(); // Static manager to get all the local brokers
 
-	public static ConcurrentMap<String, Broker> getBuff() { // Static method to get the buffer
-		return buff;
+	// Get or create the singleton
+	static BrokerManager getSelf() {
+		return self;
 	}
 
-	public static Broker get(String name) {
-		return buff.get(name);
+	static {
+		self = new BrokerManager();
+	}
+
+	// To initialize the brokers' buffer
+	private BrokerManager() {
+		brokers = new HashMap<String, Broker>();
+	}
+
+	public synchronized HashMap<String, Broker> getBrockers() { // Static method to get the buffer
+		return brokers;
+	}
+
+	public synchronized Broker get(String name) {
+		return brokers.get(name);
+	}
+	
+	public synchronized Broker remove(String name) {
+		Broker b_removed = brokers.remove(name);
+		return b_removed;
+	}
+	
+	public synchronized void removeAllBrokers() {
+		brokers.clear();
 	}
 
 	/**
@@ -21,12 +44,10 @@ public class BrokerManager {
 	 * @return true if the broker's name doesn't exist in the manager, false
 	 *         otherwise
 	 */
-	public static boolean put(String name, Broker b) {
-		if (get(name) == null) {
-			buff.put(name, b);
-			return true;
-		}
+	public synchronized void put(String name, Broker b) {
+		if (get(name) != null)
+			throw new IllegalStateException("Broker's name : " + name + " already exists");
 
-		return false;
+		brokers.put(name, b);
 	}
 }

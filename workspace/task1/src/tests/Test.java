@@ -407,7 +407,7 @@ public class Test {
 
 	public static void test4() throws Exception {
 		System.out.println("Test 4 in progress...");
-		BrokerManager.buff = new ConcurrentHashMap<String, Broker>(); // To reset buffer
+		BrokerManager.self.removeAllBrokers(); // To reset buffer
 
 		Broker b1 = new Broker("Device1");
 		Broker b2 = new Broker("Device2");

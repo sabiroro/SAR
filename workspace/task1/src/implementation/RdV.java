@@ -19,15 +19,11 @@ public class RdV {
 	Channel channel_connect; // Channel to the connecting broker
 	CircularBuffer in; // The buffer to write for the connecting task
 	CircularBuffer out; // The buffer to write for the accepting task
-	Semaphore waiting_queue; // The waiting connecting queue (semaphore to ensure FIFO)
 
 	public RdV() {
-		this.waiting_queue = new Semaphore(0, true);
 	}
 
 	public synchronized Channel connect(Broker b) throws InterruptedException { // Broker wanted a connection
-		this.waiting_queue.acquire(); // Wait until there is a place
-
 		this.bc = b;
 		notifyAll(); // If accept is blocked
 
@@ -62,8 +58,6 @@ public class RdV {
 	}
 
 	public synchronized Channel accept(Broker b, int port) throws InterruptedException { // Broker expected a connection
-		this.waiting_queue.release(); // At each accept, a place is release in the waiting queue (semaphore)
-		
 		this.ba = b;
 		this.port = port;
 

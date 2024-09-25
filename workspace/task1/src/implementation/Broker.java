@@ -1,13 +1,6 @@
 package implementation;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 public class Broker {
 	public static final int WAITING_TIME = 15; // Waiting time before a timeout in seconds
@@ -17,20 +10,18 @@ public class Broker {
 	public Broker(String name) throws Exception {
 		this.name = name;
 		this.rendez_vous = new ConcurrentHashMap<Integer, RdV>();
-		boolean name_put = BrokerManager.put(name, this);
-		if (!name_put)
-			throw new Exception("This name already exists");
+		BrokerManager.self.put(name, this);
 	}
 
-	public Channel accept(int port) throws InterruptedException {
+	public synchronized Channel accept(int port) throws InterruptedException {
 		RdV rdv = new RdV();
 		rendez_vous.put(port, rdv);
 		Channel channel = rdv.accept(this, port);
 		return channel;
 	}
 
-	public Channel connect(String name, int port) throws InterruptedException {
-		Broker target_broker = BrokerManager.get(name);
+	public synchronized Channel connect(String name, int port) throws InterruptedException {
+		Broker target_broker = BrokerManager.self.get(name);
 
 		// The target broker doesn't exist yet
 		if (target_broker == null)
@@ -57,12 +48,22 @@ public class Broker {
 //		} catch (TimeoutException e) {
 //			return null; // Timed out
 //		}
-		
-		RdV rdv_target = null;
-		while (rdv_target == null)
-			rdv_target = target_broker.getRendezVous(port); // TODO problème si pas encore créer
 
-		Channel channel = rdv_target.connect(this);
+		Channel channel = _connect(target_broker, port);
+		
+		return channel;
+	}
+
+	private Channel _connect(Broker broker, int port) {
+		RdV rdv = null;
+		synchronized (rendez_vous) {
+			while (rdv == null)
+				rdv = broker.getRendezVous(port);
+				
+			rendez_vous.remove(port);
+		}
+		Channel channel = rdv.connect();
+		
 		return channel;
 	}
 
@@ -70,7 +71,7 @@ public class Broker {
 	 * @param port : Connection's port of this broker to a rendez-vous
 	 * @return the rdv if exists, null otherwise
 	 */
-	public RdV getRendezVous(int port) {
+	private RdV getRendezVous(int port) {
 		RdV rdv = this.rendez_vous.get(port);
 		return rdv;
 	}
