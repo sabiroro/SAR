@@ -1,6 +1,6 @@
 # Communication channels
 
-Ce projet permet de créer un système de communication entre plusieurs tâches.
+Ce projet permet de créer un système de communication entre plusieurs tâches via un flux d'octets.
 
 
 ## Eléments de base
@@ -19,7 +19,9 @@ La connexion sur un channel s'ouvre quand un accept (sur un broker A) et un conn
 
 Le connect est bloquant, ainsi, si le broker espéré n'existe pas ou n'accepte pas la connexion, le connect reste bloqué. Pour parer à cela, 2 cas sont à prévoir :
 - si le broker distant acceptant n'existe pas, le connect retourne *null*.
-- si le broker distant existe mais n'accepte pas la connexion, un timer de 15 secondes est mis en place en espérant la connexion, sinon une exception est levée pour interrompre le connect.
+- si le broker distant existe mais n'accepte pas la connexion, un timer de 15 secondes est mis en place en espérant la connexion, sinon une TimeoutException est levée pour interrompre le connect.
+
+Dès la connexion établie, les méthodes retournent une instance différente de canal aux 2 brokers qui leur permerttent de communiquer entre eux.  
 
 
 ## Lecture/écriture
@@ -33,7 +35,6 @@ La méthode : **int write(byte[] bytes,int offset,int length)** permet d'écrire
 La méthode prend un tableau de bytes représentant le message à envoyer entre [offset,offset+length[. Utilisant des flux d'octets, cette méthode peut être coupée. C'est pourquoi un *int* est renvoyé indiquant le numéro de l'octet écrit. 
 
 La valeur 0 peut être retournée, bien que la **méthode est bloquante** puisqu'elle s'attend à écrire au moins une fois, cela signifie alors qu'on est bloqué.
-En cas de déconnexion du canal une channel exception (DisconnectedException) est levée.
 
 Un exemple de fonction *send* illustre un de ses usages :
 ```
@@ -54,9 +55,6 @@ La méthode : **int read(byte[] bytes,int offset,int length)** permet de lire un
 La méthode prend un tableau de bytes représentant le message à envoyer entre [offset,offset+length[. Utilisant des flux d'octets, cette méthode peut être coupée. C'est pourquoi un *int* est renvoyé indiquant le numéro de l'octet lu. 
 
 La valeur 0 peut être retournée, bien que la **méthode est bloquante** puisqu'elle s'attend à écrire au moins une fois, cela signifie alors qu'on est bloqué.
-En cas de déconnexion du canal une channel exception est levée.
-
-La fin du flux d'octets est signalée par une DisconnectedException.
 
 Un exemple de fonction *receive* illustre un de ses usages :
 ```
@@ -75,12 +73,12 @@ Un exemple de fonction *receive* illustre un de ses usages :
 ## Déconnexion
 
 Un canal peut être déconnecté à tout moment. La déconnexion est exécutée sur un thread de façon asynchrone.  
-En cas de déconnexion, les opérations en cours doivent se terminer, 2 cas ont alors lieu :
-- le write est interrompu.
-- le read finit de lire dans le canal.
-Lorsqu'une déconnexion a eu lieue, on ne peut plus invoqué de *read* ou de *write* (une exception serait alors levée).
+Lorsqu'une déconnexion a eu lieue en "local", on ne peut plus invoqué de *read* ou de *write* (une exception serait alors levée).  
+En cas de déconnexion "distante", le local passe en "semi-déconnexion", 2 cas sont alors possibles :
+- le write continue d'envoyer les octets, mais ceux-ci sont ignorés.
+- le read continue d'être possible tant qu'il reste des bytes à lire dans le canal. Dans le cas où il n'y aurait plus rien à lire, une DisconnectedException est alors levée et la canal est localement déconnecté.
 
-Lors d'une déconnexion, un flag **disconnected** permet de savoir si le channel est toujours connecté ou non.  
+Lors d'une déconnexion, un flag **disconnected** permet de savoir si le channel local est toujours connecté ou non.  
 
 
 ## Concurrence
