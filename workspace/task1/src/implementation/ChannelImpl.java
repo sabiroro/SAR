@@ -1,7 +1,9 @@
 package implementation;
 
-public class Channel {
-	public Boolean is_disconnected;
+import implementation.API.Channel;
+
+public class ChannelImpl extends Channel {
+	public boolean is_disconnected;
 	CircularBuffer in; // Buffer to write
 	CircularBuffer out; // Buffer to read
 
@@ -9,12 +11,13 @@ public class Channel {
 	 * @param in  : Buffer to write
 	 * @param out : buffer to read
 	 */
-	public Channel(CircularBuffer in, CircularBuffer out, Boolean is_disconnected) {
-		this.is_disconnected = is_disconnected;
+	public ChannelImpl(CircularBuffer in, CircularBuffer out) {
+		this.is_disconnected = false;
 		this.in = in;
 		this.out = out;
 	}
 
+	@Override
 	public int read(byte[] bytes, int offset, int length) throws DisconnectedException {
 		if (is_disconnected)
 			throw new DisconnectedException("The channel is disconnected !");
@@ -27,6 +30,7 @@ public class Channel {
 		return bytes_read;
 	}
 
+	@Override
 	public int write(byte[] bytes, int offset, int length) throws DisconnectedException {
 		if (is_disconnected)
 			throw new DisconnectedException("The channel is disconnected !");
@@ -42,10 +46,12 @@ public class Channel {
 		return bytes_wrote;
 	}
 
+	@Override
 	public synchronized void disconnect() {
 		is_disconnected = true;
 	}
 
+	@Override
 	public boolean disconnected() {
 		return is_disconnected;
 	}

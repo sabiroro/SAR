@@ -1,13 +1,7 @@
 package implementation;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import implementation.API.Broker;
+import implementation.API.Channel;
 
 public class RdV {
 	static final int CIRCULAR_BUFFER_SIZE = 10;
@@ -23,7 +17,7 @@ public class RdV {
 	public RdV() {
 	}
 
-	public synchronized Channel connect(Broker b) throws InterruptedException { // Broker wanted a connection
+	public synchronized Channel connect(Broker b, int port) { // Broker wanted a connection
 		this.bc = b;
 		notifyAll(); // If accept is blocked
 
@@ -51,7 +45,11 @@ public class RdV {
 //		}
 		
 		while (channel_connect == null) {
-			wait();
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				// Nothing there
+			}
 		}
 
 		return channel_connect;
@@ -69,9 +67,8 @@ public class RdV {
 		// Create channels
 		this.in = new CircularBuffer(CIRCULAR_BUFFER_SIZE);
 		this.out = new CircularBuffer(CIRCULAR_BUFFER_SIZE);
-		Boolean is_disconnected = false; // We use the Boolean's class to pass by reference
-		this.channel_accept = new Channel(in, out, is_disconnected);
-		this.channel_connect = new Channel(out, in, is_disconnected);
+		this.channel_accept = new ChannelImpl(in, out);
+		this.channel_connect = new ChannelImpl(out, in);
 		notifyAll(); // If connect is blocked
 		return this.channel_accept;
 	}

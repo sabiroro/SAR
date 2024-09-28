@@ -1,13 +1,14 @@
 package tests;
 
 import java.nio.ByteBuffer;
-import java.util.concurrent.ConcurrentHashMap;
 
-import implementation.Broker;
+import implementation.BrokerImpl;
 import implementation.BrokerManager;
-import implementation.Channel;
 import implementation.DisconnectedException;
-import implementation.Task;
+import implementation.TaskImpl;
+import implementation.API.Broker;
+import implementation.API.Channel;
+import implementation.API.Task;
 
 public class Test {
 	public static void main(String[] args) {
@@ -30,8 +31,8 @@ public class Test {
 	public static void test1() throws Exception {
 		System.out.println("Test 1 in progress...");
 
-		Broker b1 = new Broker("Device1");
-		Task t1 = new Task(b1, new Runnable() {
+		Broker b1 = new BrokerImpl("Device1");
+		Task t1 = new TaskImpl(b1, new Runnable() {
 
 			@Override
 			public void run() {
@@ -52,15 +53,15 @@ public class Test {
 				} catch (NullPointerException e) {
 					e.printStackTrace();
 					System.exit(-1);
-				} catch (IllegalStateException | InterruptedException e) {
+				} catch (IllegalStateException e) {
 					e.printStackTrace();
 				}
 
 			}
 		});
 
-		Broker b2 = new Broker("Device2");
-		Task t2 = new Task(b2, new Runnable() {
+		Broker b2 = new BrokerImpl("Device2");
+		Task t2 = new TaskImpl(b2, new Runnable() {
 
 			@Override
 			public void run() {
@@ -80,7 +81,7 @@ public class Test {
 				} catch (NullPointerException e) {
 					e.printStackTrace();
 					System.exit(-1);
-				} catch (IllegalStateException | InterruptedException e) {
+				} catch (IllegalStateException e) {
 					e.printStackTrace();
 				}
 
@@ -97,8 +98,8 @@ public class Test {
 	public static void test1bis() throws Exception {
 		System.out.println("Test 1 bis in progress...");
 
-		Broker b1 = new Broker("pc1");
-		Task t1 = new Task(b1, new Runnable() {
+		Broker b1 = new BrokerImpl("pc1");
+		Task t1 = new TaskImpl(b1, new Runnable() {
 
 			@Override
 			public void run() {
@@ -120,20 +121,15 @@ public class Test {
 			}
 		});
 
-		Broker b2 = new Broker("pc2");
-		Task t2 = new Task(b2, new Runnable() {
+		Broker b2 = new BrokerImpl("pc2");
+		Task t2 = new TaskImpl(b2, new Runnable() {
 
 			@Override
 			public void run() {
 				Channel c2;
-				try {
-					c2 = b2.connect("pc1", 6969);
+				c2 = b2.connect("pc1", 6969);
 
-					c2.disconnect();
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				c2.disconnect();
 			}
 		});
 
@@ -143,13 +139,13 @@ public class Test {
 		System.out.println("Test 1 bis done !\n");
 	}
 
-	// Try a simple echo
+	// Try a se echo
 	public static void test2() throws Exception {
 		System.out.println("Test 2 in progress...");
 
-		Broker server = new Broker("Server");
-		Broker client = new Broker("Client");
-		
+		Broker server = new BrokerImpl("Server");
+		Broker client = new BrokerImpl("Client");
+
 		String msg_to_send = "Client's message";
 		byte[] byte_message_sent = msg_to_send.getBytes();
 		byte[] byte_message_echo_read = new byte[byte_message_sent.length];
@@ -177,7 +173,7 @@ public class Test {
 					client_channel.disconnect();
 				}
 
-				catch (DisconnectedException | InterruptedException e) {
+				catch (DisconnectedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -211,7 +207,7 @@ public class Test {
 					serv_channel.disconnect();
 				}
 
-				catch (DisconnectedException | InterruptedException e) {
+				catch (DisconnectedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -220,9 +216,9 @@ public class Test {
 		};
 
 		// Write message
-		Task t1 = new Task(client, client_runnable);
+		Task t1 = new TaskImpl(client, client_runnable);
 		// Read message
-		Task t2 = new Task(server, server_runnable);
+		Task t2 = new TaskImpl(server, server_runnable);
 
 		// We expected the end of tasks to test if it is the same message
 		t1.join();
@@ -242,10 +238,10 @@ public class Test {
 	// Echo with clients
 	public static void test3() throws Exception {
 		System.out.println("Test 3 in progress...");
-		
-		Broker server = new Broker("Server1");
-		Broker client1 = new Broker("Client1");
-		
+
+		Broker server = new BrokerImpl("Server1");
+		Broker client1 = new BrokerImpl("Client1");
+
 		String msg_to_send1 = "Client1's message";
 		byte[] byte_message_sent1 = msg_to_send1.getBytes();
 		byte[] byte_message_echo_read1 = new byte[byte_message_sent1.length];
@@ -270,7 +266,7 @@ public class Test {
 								byte_message_sent1.length - number_of_bytes_read);
 					}
 					client1_channel.disconnect();
-				} catch (DisconnectedException | InterruptedException e) {
+				} catch (DisconnectedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -278,7 +274,7 @@ public class Test {
 			}
 		};
 
-		Broker client2 = new Broker("Client2");
+		Broker client2 = new BrokerImpl("Client2");
 		String msg_to_send2 = "Client2's message";
 		byte[] byte_message_sent2 = msg_to_send2.getBytes();
 		byte[] byte_message_echo_read2 = new byte[byte_message_sent2.length];
@@ -303,7 +299,7 @@ public class Test {
 								byte_message_sent2.length - number_of_bytes_read);
 					}
 					client2_channel.disconnect();
-				} catch (DisconnectedException | InterruptedException e) {
+				} catch (DisconnectedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -333,7 +329,7 @@ public class Test {
 						number_of_bytes_wrote += serv_channel.write(byte_message_received1, number_of_bytes_wrote,
 								byte_message_sent1.length - number_of_bytes_wrote);
 					}
-				} catch (DisconnectedException | InterruptedException e) {
+				} catch (DisconnectedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -365,11 +361,11 @@ public class Test {
 		};
 
 		// Write message (client 1)
-		Task t1 = new Task(client1, client_runnable1);
+		Task t1 = new TaskImpl(client1, client_runnable1);
 		// Read message
-		Task t2 = new Task(server, server_runnable);
+		Task t2 = new TaskImpl(server, server_runnable);
 		// Write message (client 2)
-		Task t3 = new Task(client2, client_runnable2);
+		Task t3 = new TaskImpl(client2, client_runnable2);
 
 		// We expected the end of tasks to test if it is the same message
 		t1.join();
@@ -409,8 +405,8 @@ public class Test {
 		System.out.println("Test 4 in progress...");
 		BrokerManager.self.removeAllBrokers(); // To reset buffer
 
-		Broker b1 = new Broker("Device1");
-		Broker b2 = new Broker("Device2");
+		Broker b1 = new BrokerImpl("Device1");
+		Broker b2 = new BrokerImpl("Device2");
 
 		byte[] msg_sent = "Salut c'est le Ro !".getBytes();
 		byte[] msg_received = new byte[msg_sent.length];
@@ -433,7 +429,7 @@ public class Test {
 					receive(msg_received, c);
 
 					c.disconnect();
-				} catch (DisconnectedException | InterruptedException e) {
+				} catch (DisconnectedException e) {
 					e.printStackTrace();
 				}
 			}
@@ -458,15 +454,15 @@ public class Test {
 					send(msg_get, c);
 
 					c.disconnect();
-				} catch (DisconnectedException | InterruptedException e) {
+				} catch (DisconnectedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
 		};
 
-		Task t1 = new Task(b1, send_runnable);
-		Task t2 = new Task(b2, read_runnable);
+		Task t1 = new TaskImpl(b1, send_runnable);
+		Task t2 = new TaskImpl(b2, read_runnable);
 
 		t1.join();
 		t2.join();

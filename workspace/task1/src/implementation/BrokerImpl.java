@@ -2,26 +2,35 @@ package implementation;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-public class Broker {
+import implementation.API.Broker;
+import implementation.API.Channel;
+
+public class BrokerImpl extends Broker {
 	public static final int WAITING_TIME = 15; // Waiting time before a timeout in seconds
-	String name;
 	ConcurrentHashMap<Integer, RdV> rendez_vous; // To store port and rendez-vous effective
 
-	public Broker(String name) throws Exception {
-		this.name = name;
+	public BrokerImpl(String name) throws Exception {
+		super(name);
 		this.rendez_vous = new ConcurrentHashMap<Integer, RdV>();
 		BrokerManager.self.put(name, this);
 	}
 
-	public synchronized Channel accept(int port) throws InterruptedException {
+	@Override
+	public synchronized Channel accept(int port) {
 		RdV rdv = new RdV();
 		rendez_vous.put(port, rdv);
-		Channel channel = rdv.accept(this, port);
+		Channel channel = null;
+		try {
+			channel = rdv.accept(this, port);
+		} catch (InterruptedException e) {
+			// Nothing there
+		}
 		return channel;
 	}
 
-	public synchronized Channel connect(String name, int port) throws InterruptedException {
-		Broker target_broker = BrokerManager.self.get(name);
+	@Override
+	public synchronized Channel connect(String name, int port) {
+		BrokerImpl target_broker = BrokerManager.self.get(name);
 
 		// The target broker doesn't exist yet
 		if (target_broker == null)
@@ -54,7 +63,7 @@ public class Broker {
 		return channel;
 	}
 
-	private Channel _connect(Broker broker, int port) {
+	private Channel _connect(BrokerImpl broker, int port) {
 		RdV rdv = null;
 		synchronized (rendez_vous) {
 			while (rdv == null)
@@ -62,7 +71,7 @@ public class Broker {
 				
 			rendez_vous.remove(port);
 		}
-		Channel channel = rdv.connect();
+		Channel channel = rdv.connect(broker, port);
 		
 		return channel;
 	}
