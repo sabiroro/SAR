@@ -16,15 +16,18 @@ public class BrokerImpl extends Broker {
 	}
 
 	@Override
-	public synchronized Channel accept(int port) {
-		RdV rdv = new RdV();
-		rendez_vous.put(port, rdv);
-		Channel channel = null;
-		try {
-			channel = rdv.accept(this, port);
-		} catch (InterruptedException e) {
-			// Nothing there
+	public synchronized Channel accept(int port) throws DisconnectedException {
+		RdV rdv = null;
+		synchronized (rendez_vous) {
+			rdv = getRendezVous(port);
+			if (rdv != null)
+				throw new DisconnectedException("Broker's port : " + port + " is already in the accepting queue");
+			rdv = new RdV();
+			rendez_vous.put(port, rdv);
+			rendez_vous.notifyAll();
 		}
+		
+		Channel channel = rdv.accept(this, port);
 		return channel;
 	}
 
@@ -35,6 +38,9 @@ public class BrokerImpl extends Broker {
 		// The target broker doesn't exist yet
 		if (target_broker == null)
 			return null;
+		
+		Channel channel = target_broker._connect(this, port);
+		return channel;
 
 		// Create an executor to manage the timeout
 //		ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -58,21 +64,26 @@ public class BrokerImpl extends Broker {
 //			return null; // Timed out
 //		}
 
-		Channel channel = _connect(target_broker, port);
 		
-		return channel;
 	}
 
 	private Channel _connect(BrokerImpl broker, int port) {
 		RdV rdv = null;
 		synchronized (rendez_vous) {
-			while (rdv == null)
-				rdv = broker.getRendezVous(port);
+			rdv = getRendezVous(port);
+			while (rdv == null) {
+				try {
+					rendez_vous.wait();
+				} catch (InterruptedException e) {
+					// Nothing there
+				}
 				
+				rdv = getRendezVous(port);
+			}
 			rendez_vous.remove(port);
 		}
-		Channel channel = rdv.connect(broker, port);
 		
+		Channel channel = rdv.connect(this, port);
 		return channel;
 	}
 
@@ -81,7 +92,7 @@ public class BrokerImpl extends Broker {
 	 * @return the rdv if exists, null otherwise
 	 */
 	private RdV getRendezVous(int port) {
-		RdV rdv = this.rendez_vous.get(port);
+		RdV rdv = rendez_vous.get(port);
 		return rdv;
 	}
 }

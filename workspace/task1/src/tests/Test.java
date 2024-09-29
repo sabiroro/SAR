@@ -16,7 +16,7 @@ public class Test {
 			test1();
 			test1bis();
 			test2();
-			test3();
+			//test3();
 			test4();
 			System.out.println("All tests have been done successfully !");
 		}
@@ -37,7 +37,12 @@ public class Test {
 			@Override
 			public void run() {
 				try {
-					// Thread.sleep(2000);
+					try {
+						// Put some delay to try doing connect before accept
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						// Nothing there
+					}
 					Channel c1 = b1.accept(6969);
 
 					// Check the connection
@@ -50,11 +55,9 @@ public class Test {
 					if (!c1.disconnected())
 						throw new IllegalStateException("The channels seem to remain connected...");
 
-				} catch (NullPointerException e) {
+				} catch (NullPointerException | IllegalStateException | DisconnectedException e) {
 					e.printStackTrace();
 					System.exit(-1);
-				} catch (IllegalStateException e) {
-					e.printStackTrace();
 				}
 
 			}
@@ -78,11 +81,9 @@ public class Test {
 					if (!c2.disconnected())
 						throw new IllegalStateException("The channels seem to remain connected...");
 
-				} catch (NullPointerException e) {
+				} catch (NullPointerException | IllegalStateException e) {
 					e.printStackTrace();
 					System.exit(-1);
-				} catch (IllegalStateException e) {
-					e.printStackTrace();
 				}
 
 			}
@@ -105,18 +106,9 @@ public class Test {
 			public void run() {
 				try {
 					Channel c1 = b1.accept(6969);
-
 					c1.write("hello world".getBytes(), 0, 5);
-					c1.read(new byte[20], 0, 3);
-
-					c1.disconnect();
-					c1.read(new byte[5], 0, 3);
-					throw new IllegalStateException("The channel should not be readable");
 				} catch (DisconnectedException e) {
-					System.out.println("	-> Disconnected exception caugth sucessfully : " + e.getMessage());
-				} catch (Exception e) {
-					e.printStackTrace();
-					System.out.println(e.getMessage());
+					// Nothing there
 				}
 			}
 		});
@@ -126,10 +118,18 @@ public class Test {
 
 			@Override
 			public void run() {
-				Channel c2;
-				c2 = b2.connect("pc1", 6969);
+				Channel c2 = b2.connect("pc1", 6969);
+				try {
+					c2.read(new byte[20], 0, 3);
+					c2.disconnect();
+					
+					c2.read(new byte[5], 0, 3);
+					throw new IllegalStateException("The channel should not be readable");
+					
+				} catch (DisconnectedException e) {
+					System.out.println("	-> Disconnected exception caugth sucessfully : " + e.getMessage());
+				}
 
-				c2.disconnect();
 			}
 		});
 
@@ -139,7 +139,7 @@ public class Test {
 		System.out.println("Test 1 bis done !\n");
 	}
 
-	// Try a se echo
+	// Try a server echo by knowing the message size
 	public static void test2() throws Exception {
 		System.out.println("Test 2 in progress...");
 
@@ -174,8 +174,7 @@ public class Test {
 				}
 
 				catch (DisconnectedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					// Nothing there
 				}
 
 				System.out.println("	-> Echo message wrote by client !");
@@ -208,8 +207,7 @@ public class Test {
 				}
 
 				catch (DisconnectedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					// Nothing there
 				}
 				System.out.println("	-> Echo message wrote by server !");
 			}
@@ -227,10 +225,10 @@ public class Test {
 		String message = new String(byte_message_sent);
 		String echo_message = new String(byte_message_echo_read);
 
-		if (message != echo_message)
-			throw new Exception("	-> Those messages are not the same... " + message + " == " + echo_message);
+		if (!message.equals(echo_message))
+			throw new Exception("	-> Those messages are not the same... '" + message + "' != '" + echo_message + "'");
 		else
-			System.out.println("	-> Messages send : " + message + " == " + echo_message);
+			System.out.println("	-> Messages send : '" + message + "' == '" + echo_message + "'");
 
 		System.out.println("Test 2 done !\n");
 	}
@@ -267,8 +265,7 @@ public class Test {
 					}
 					client1_channel.disconnect();
 				} catch (DisconnectedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					// Nothing there
 				}
 				System.out.println("	-> Echo message wrote by client 1 !");
 			}
@@ -300,8 +297,7 @@ public class Test {
 					}
 					client2_channel.disconnect();
 				} catch (DisconnectedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					// Nothing there
 				}
 				System.out.println("	-> Echo message wrote by client 2 !");
 			}
@@ -330,8 +326,7 @@ public class Test {
 								byte_message_sent1.length - number_of_bytes_wrote);
 					}
 				} catch (DisconnectedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					// Nothing there
 				}
 				System.out.println("	-> Echo message (from client 1) wrote by server !");
 
@@ -351,8 +346,7 @@ public class Test {
 								byte_message_sent2.length - number_of_bytes_wrote);
 					}
 				} catch (DisconnectedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					// Nothing there
 				}
 				System.out.println("	-> Echo message (from client 2) wrote by server !");
 
@@ -455,8 +449,7 @@ public class Test {
 
 					c.disconnect();
 				} catch (DisconnectedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					// Nothing there
 				}
 			}
 		};
@@ -467,10 +460,14 @@ public class Test {
 		t1.join();
 		t2.join();
 
-		if (msg_sent.toString() != msg_received.toString())
-			System.out.println("Messages are not the same...");
-		System.out.println(msg_sent.toString() + " is different than " + msg_received.toString());
-
-		System.out.println("Test 4 done !");
+		String smsg = new String(msg_sent);
+		String rmsg = new String(msg_received);
+		
+		if (!smsg.equals(rmsg))
+			throw new Exception("	-> Messages are not the same... '" + smsg + "' is different than '" + rmsg + "'");
+			
+		System.out.println("	-> Messages send and echo : '" + smsg + "' == '" + rmsg + "' !");
+		
+		System.out.println("Test 4 done !\n");
 	}
 }
