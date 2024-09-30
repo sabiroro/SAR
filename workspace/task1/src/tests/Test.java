@@ -16,7 +16,7 @@ public class Test {
 			test1();
 			test1bis();
 			test2();
-			//test3();
+			test3();
 			test4();
 			System.out.println("All tests have been done successfully !");
 		}
@@ -122,10 +122,10 @@ public class Test {
 				try {
 					c2.read(new byte[20], 0, 3);
 					c2.disconnect();
-					
+
 					c2.read(new byte[5], 0, 3);
 					throw new IllegalStateException("The channel should not be readable");
-					
+
 				} catch (DisconnectedException e) {
 					System.out.println("	-> Disconnected exception caugth sucessfully : " + e.getMessage());
 				}
@@ -330,7 +330,11 @@ public class Test {
 				}
 				System.out.println("	-> Echo message (from client 1) wrote by server !");
 
+				serv_channel.disconnect();
+
 				try {
+					serv_channel = server.accept(6969);
+
 					// Read message
 					int number_of_bytes_read = 0;
 					while (number_of_bytes_read != byte_message_received2.length) {
@@ -366,11 +370,18 @@ public class Test {
 		t2.join();
 		t3.join();
 
-		if (new String(byte_message_sent1) != new String(byte_message_echo_read1))
-			throw new Exception("Client1's messages are not the same...");
-		if (new String(byte_message_sent2) != new String(byte_message_echo_read2))
-			throw new Exception("Client2's messages are not the same...");
+		String msg1 = new String(byte_message_sent1);
+		String echo1 = new String(byte_message_echo_read1);
 
+		String msg2 = new String(byte_message_sent2);
+		String echo2 = new String(byte_message_echo_read2);
+		
+		if (!msg1.equals(echo1))
+			throw new Exception("	-> Client1's messages are not the same... '" + msg1 + "' != '" + echo1 + "'");
+		if (!msg2.equals(echo2))
+			throw new Exception("	-> Client2's messages are not the same... '" + msg2 + "' != '" + echo2 + "'");
+
+		System.out.println("		=> Messages of client1 and 2 are echoed successfully !");
 		System.out.println("Test 3 done !\n");
 	}
 
@@ -462,12 +473,12 @@ public class Test {
 
 		String smsg = new String(msg_sent);
 		String rmsg = new String(msg_received);
-		
+
 		if (!smsg.equals(rmsg))
 			throw new Exception("	-> Messages are not the same... '" + smsg + "' is different than '" + rmsg + "'");
-			
+
 		System.out.println("	-> Messages send and echo : '" + smsg + "' == '" + rmsg + "' !");
-		
+
 		System.out.println("Test 4 done !\n");
 	}
 }

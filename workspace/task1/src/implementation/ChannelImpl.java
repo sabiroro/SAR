@@ -70,8 +70,8 @@ public class ChannelImpl extends Channel {
 		catch (DisconnectedException e) {
 			if (!is_disconnected) {
 				is_disconnected = true;
-				synchronized (out) {
-					out.notify();
+				synchronized (in) {
+					in.notifyAll(); // To inform that the last bytes to be read
 				}
 			}
 			throw e;
@@ -86,50 +86,55 @@ public class ChannelImpl extends Channel {
 			throw new DisconnectedException("The channel is disconnected !");
 
 		int bytes_wrote = 0;
-		try {
-			while (bytes_wrote == 0) {
-				synchronized (in) {
-					while (in.full()) {
-						if (is_dangling || is_disconnected) {
-							throw new DisconnectedException();
-						}
-						try {
-							in.wait();
-						} catch (InterruptedException e) {
-							// Nothing there
-						}
+		while (bytes_wrote == 0) {
+			synchronized (in) {
+				while (in.full()) {
+					if (is_disconnected) {
+						throw new DisconnectedException();
 					}
-				}
-
-				while (!in.full() && bytes_wrote < length) {
-					in.push(bytes[offset + bytes_wrote]);
-					bytes_wrote++;
-				}
-
-				if (bytes_wrote != 0) {
-					synchronized (in) {
-						in.notify();
+					if (is_dangling)
+						return length; // To drop bytes if we want to write
+					
+					try {
+						in.wait();
+					} catch (InterruptedException e) {
+						// Nothing there
 					}
 				}
 			}
-		}
 
-		catch (DisconnectedException e) {
-			if (!is_disconnected) {
-				is_disconnected = true;
+			while (!in.full() && bytes_wrote < length) {
+				in.push(bytes[offset + bytes_wrote]);
+				bytes_wrote++;
+			}
+
+			if (bytes_wrote != 0) {
 				synchronized (in) {
 					in.notify();
 				}
 			}
-			throw e;
 		}
 
 		return bytes_wrote;
 	}
 
 	@Override
-	public synchronized void disconnect() {
-		is_disconnected = true;
+	public void disconnect() {
+		synchronized (this) {
+			if (is_disconnected)
+				throw new IllegalStateException("The channel is already disconnected");
+			is_disconnected = true;
+			remote_channel.is_dangling = true; // Half-disconnected flag of the remote channel
+		}
+
+		synchronized (in) {
+			in.notify();
+		}
+
+		synchronized (out) {
+			out.notify();
+		}
+
 	}
 
 	@Override
