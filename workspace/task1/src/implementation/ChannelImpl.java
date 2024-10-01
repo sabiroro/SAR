@@ -12,7 +12,7 @@ public class ChannelImpl extends Channel {
 	CircularBuffer in; // Buffer to write (for remote broker)
 	CircularBuffer out; // Buffer to read (from remote broker)
 
-	protected ChannelImpl(Broker broker, int port) {
+	public ChannelImpl(Broker broker, int port) {
 		super(broker);
 		this.port = port;
 		this.is_disconnected = false;
@@ -140,5 +140,25 @@ public class ChannelImpl extends Channel {
 	@Override
 	public boolean disconnected() {
 		return is_disconnected;
+	}
+
+	@Override
+	public void send(byte[] bytes, int offset, int length) {
+		throw new IllegalCallerException("Channel can't invoke this method");
+	}
+
+	@Override
+	public byte[] receive() {
+		throw new IllegalCallerException("Channel can't invoke this method");
+	}
+
+	@Override
+	public void close() {
+		throw new IllegalCallerException("Channel can't invoke this method");
+	}
+
+	@Override
+	public boolean closed() {
+		throw new IllegalCallerException("Channel can't invoke this method");
 	}
 }

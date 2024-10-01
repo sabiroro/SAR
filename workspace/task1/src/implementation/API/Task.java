@@ -11,13 +11,15 @@ public abstract class Task extends Thread {
 		this.runnable = r;
 	};
 	
-	public Task(QueueBroker b, Runnable r) throws Exception {
-		throw new Exception("NYI");
+	public Task(QueueBroker b, Runnable r) {
+		this.broker = b.broker;
+		this.queuebroker = b;
+		this.runnable = r;
 	};
 
 	public abstract Broker getBroker();
 
-	public abstract QueueBroker getQueueBroker() throws Exception;
+	public abstract QueueBroker getQueueBroker();
 	
 	public static Task getTask() {
 		Task t = (Task) Thread.currentThread();

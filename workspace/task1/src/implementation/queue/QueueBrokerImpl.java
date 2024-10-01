@@ -1,29 +1,35 @@
 package implementation.queue;
 
+import implementation.DisconnectedException;
 import implementation.API.Broker;
+import implementation.API.Channel;
 import implementation.API.MessageQueue;
 import implementation.API.QueueBroker;
+import implementation.abstractclasses.MasterChannel;
 
 public class QueueBrokerImpl extends QueueBroker {
-
 	public QueueBrokerImpl(Broker broker) {
 		super(broker);
-		// TODO Auto-generated constructor stub
+		super.name = broker.name;
 	}
 
 	@Override
 	public String name() throws Exception {
-		throw new Exception("NYI");
+		return super.name;
 	}
 
 	@Override
-	public MessageQueue accept(int port) throws Exception {
-		throw new Exception("NYI");
+	public MessageQueue accept(int port) throws DisconnectedException {
+		MasterChannel mc = super.broker.accept(port);
+		MessageQueue mq = new MessageQueueImpl((Channel) mc);
+		return mq;
 	}
 
 	@Override
-	public MessageQueue connect(String name, int port) throws Exception {
-		throw new Exception("NYI");
+	public MessageQueue connect(String name, int port) {
+		MasterChannel mc = super.broker.connect(name, port);
+		MasterChannel mq = new MessageQueueImpl((Channel) mc);
+		return (MessageQueue) mq;
 	}
 
 }

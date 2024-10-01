@@ -1,12 +1,12 @@
 package implementation.API;
 
 import implementation.DisconnectedException;
+import implementation.abstractclasses.MasterBroker;
 
-public abstract class Broker {
-	public String name;
-
+public abstract class Broker extends MasterBroker {
 	public Broker(String name) {
-		this.name = name;
+		super.name = name;
+		super.broker = this;
 	};
 
 	public abstract Channel accept(int port) throws DisconnectedException;

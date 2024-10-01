@@ -1,8 +1,9 @@
 package implementation.API;
 
 import implementation.DisconnectedException;
+import implementation.abstractclasses.MasterChannel;
 
-public abstract class Channel {
+public abstract class Channel extends MasterChannel {
 	Broker broker;
 	
 	public Channel(Broker b) {

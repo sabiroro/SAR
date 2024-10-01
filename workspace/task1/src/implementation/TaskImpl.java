@@ -10,7 +10,7 @@ public class TaskImpl extends Task {
 		this.start();
 	}
 	
-	public TaskImpl(QueueBroker b, Runnable r) throws Exception {
+	public TaskImpl(QueueBroker b, Runnable r) {
 		super(b, r);
 		this.start();
 	}
@@ -26,7 +26,8 @@ public class TaskImpl extends Task {
 	}
 
 	@Override
-	public QueueBroker getQueueBroker() throws Exception {
-		throw new Exception("NYI");
+	public QueueBroker getQueueBroker() {
+		Task t = Task.getTask();
+		return t.queuebroker;
 	}
 }

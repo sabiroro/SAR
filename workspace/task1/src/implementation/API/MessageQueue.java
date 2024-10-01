@@ -1,11 +1,14 @@
 package implementation.API;
 
-public abstract class MessageQueue {
-	public abstract void send(byte[] bytes, int offset, int length) throws Exception;
+import implementation.DisconnectedException;
+import implementation.abstractclasses.MasterChannel;
 
-	public abstract byte[] receive() throws Exception;
+public abstract class MessageQueue extends MasterChannel {
+	public abstract void send(byte[] bytes, int offset, int length) throws DisconnectedException;
 
-	public abstract void close() throws Exception;
+	public abstract byte[] receive() throws DisconnectedException;
 
-	public abstract boolean closed() throws Exception;
+	public abstract void close();
+
+	public abstract boolean closed();
 }
