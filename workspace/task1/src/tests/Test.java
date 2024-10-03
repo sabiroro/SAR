@@ -1,6 +1,7 @@
 package tests;
 
 import java.nio.ByteBuffer;
+import java.util.concurrent.TimeoutException;
 
 import implementation.BrokerImpl;
 import implementation.BrokerManager;
@@ -18,12 +19,15 @@ public class Test {
 			test2();
 			test3();
 			test4();
+			test5();
 			System.out.println("All tests have been done successfully !");
+			System.exit(0);
 		}
 
 		catch (Exception e) {
 			e.printStackTrace();
 			System.out.println("	The test has failed : " + e.getMessage());
+			System.exit(-1);
 		}
 	}
 
@@ -32,6 +36,8 @@ public class Test {
 		System.out.println("Test 1 in progress...");
 
 		Broker b1 = new BrokerImpl("Device1");
+		Broker b2 = new BrokerImpl("Device2");
+
 		Task t1 = new TaskImpl(b1, new Runnable() {
 
 			@Override
@@ -63,7 +69,6 @@ public class Test {
 			}
 		});
 
-		Broker b2 = new BrokerImpl("Device2");
 		Task t2 = new TaskImpl(b2, new Runnable() {
 
 			@Override
@@ -81,7 +86,7 @@ public class Test {
 					if (!c2.disconnected())
 						throw new IllegalStateException("The channels seem to remain connected...");
 
-				} catch (NullPointerException | IllegalStateException e) {
+				} catch (NullPointerException | IllegalStateException | TimeoutException e) {
 					e.printStackTrace();
 					System.exit(-1);
 				}
@@ -100,6 +105,8 @@ public class Test {
 		System.out.println("Test 1 bis in progress...");
 
 		Broker b1 = new BrokerImpl("pc1");
+		Broker b2 = new BrokerImpl("pc2");
+
 		Task t1 = new TaskImpl(b1, new Runnable() {
 
 			@Override
@@ -113,12 +120,16 @@ public class Test {
 			}
 		});
 
-		Broker b2 = new BrokerImpl("pc2");
 		Task t2 = new TaskImpl(b2, new Runnable() {
 
 			@Override
 			public void run() {
-				Channel c2 = b2.connect("pc1", 6969);
+				Channel c2 = null;
+				try {
+					c2 = b2.connect("pc1", 6969);
+				} catch (TimeoutException e1) {
+					e1.printStackTrace();
+				}
 				try {
 					c2.read(new byte[20], 0, 3);
 					c2.disconnect();
@@ -173,7 +184,7 @@ public class Test {
 					client_channel.disconnect();
 				}
 
-				catch (DisconnectedException e) {
+				catch (DisconnectedException | TimeoutException e) {
 					// Nothing there
 				}
 
@@ -239,6 +250,7 @@ public class Test {
 
 		Broker server = new BrokerImpl("Server1");
 		Broker client1 = new BrokerImpl("Client1");
+		Broker client2 = new BrokerImpl("Client2");
 
 		String msg_to_send1 = "Client1's message";
 		byte[] byte_message_sent1 = msg_to_send1.getBytes();
@@ -264,14 +276,13 @@ public class Test {
 								byte_message_sent1.length - number_of_bytes_read);
 					}
 					client1_channel.disconnect();
-				} catch (DisconnectedException e) {
+				} catch (DisconnectedException | TimeoutException e) {
 					// Nothing there
 				}
 				System.out.println("	-> Echo message wrote by client 1 !");
 			}
 		};
 
-		Broker client2 = new BrokerImpl("Client2");
 		String msg_to_send2 = "Client2's message";
 		byte[] byte_message_sent2 = msg_to_send2.getBytes();
 		byte[] byte_message_echo_read2 = new byte[byte_message_sent2.length];
@@ -296,7 +307,7 @@ public class Test {
 								byte_message_sent2.length - number_of_bytes_read);
 					}
 					client2_channel.disconnect();
-				} catch (DisconnectedException e) {
+				} catch (DisconnectedException | TimeoutException e) {
 					// Nothing there
 				}
 				System.out.println("	-> Echo message wrote by client 2 !");
@@ -375,7 +386,7 @@ public class Test {
 
 		String msg2 = new String(byte_message_sent2);
 		String echo2 = new String(byte_message_echo_read2);
-		
+
 		if (!msg1.equals(echo1))
 			throw new Exception("	-> Client1's messages are not the same... '" + msg1 + "' != '" + echo1 + "'");
 		if (!msg2.equals(echo2))
@@ -459,7 +470,7 @@ public class Test {
 					send(msg_get, c);
 
 					c.disconnect();
-				} catch (DisconnectedException e) {
+				} catch (DisconnectedException | TimeoutException e) {
 					// Nothing there
 				}
 			}
@@ -480,5 +491,35 @@ public class Test {
 		System.out.println("	-> Messages send and echo : '" + smsg + "' == '" + rmsg + "' !");
 
 		System.out.println("Test 4 done !\n");
+	}
+
+	public static void test5() throws Exception {
+		System.out.println("Test 5 in progress...");
+		BrokerManager.self.removeAllBrokers(); // To reset buffer
+
+		Broker b1 = new BrokerImpl("Device1");
+		new BrokerImpl("Device2");
+
+		Task t = new TaskImpl(b1, new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					b1.connect("Device2", 6969);
+					throw new IllegalStateException("	-> Aucun timeout n'a été levé...");
+
+				} catch (NullPointerException | IllegalStateException e) {
+					e.printStackTrace();
+					System.exit(-1);
+				} catch (TimeoutException e) {
+					System.out.println("	-> Le timeout a bien été renvoyé !");
+				}
+
+			}
+		});
+
+		t.join();
+
+		System.out.println("Test 5 done !\n");
 	}
 }

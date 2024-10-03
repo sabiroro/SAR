@@ -1,5 +1,7 @@
 package implementation.queue;
 
+import java.util.concurrent.TimeoutException;
+
 import implementation.DisconnectedException;
 import implementation.API.Broker;
 import implementation.API.Channel;
@@ -26,10 +28,10 @@ public class QueueBrokerImpl extends QueueBroker {
 	}
 
 	@Override
-	public MessageQueue connect(String name, int port) {
+	public MessageQueue connect(String name, int port) throws TimeoutException {
 		MasterChannel mc = super.broker.connect(name, port);
-		MasterChannel mq = new MessageQueueImpl((Channel) mc);
-		return (MessageQueue) mq;
+		MessageQueue mq = new MessageQueueImpl((Channel) mc);
+		return mq;
 	}
 
 }

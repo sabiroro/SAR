@@ -64,7 +64,7 @@ public class MessageQueueImpl extends MessageQueue {
 
 	private void _receive(byte[] bytes, int length) throws DisconnectedException {
 		int bytes_received = 0;
-		while (bytes_received < Integer.BYTES)
+		while (bytes_received < length)
 			bytes_received += channel.read(bytes, bytes_received, length - bytes_received);
 	}
 	

@@ -14,12 +14,18 @@ public class TestQueue {
 		try {
 			BrokerManager.self.removeAllBrokers();
 			test1();
+			BrokerManager.self.removeAllBrokers();
 			test2(8080, 1, 1);
-			test2(67294, 0, 0);
+			BrokerManager.self.removeAllBrokers();
+			test2(67294, 5, 2);
+			BrokerManager.self.removeAllBrokers();
 			test3();
+			BrokerManager.self.removeAllBrokers();
 			test4(true);
+			BrokerManager.self.removeAllBrokers();
 			test4(false);
 			System.out.println("All tests have been done successfully !");
+			System.exit(0);
 		}
 
 		catch (Exception e) {
@@ -33,6 +39,7 @@ public class TestQueue {
 		System.out.println("Test 1 in progress...");
 
 		Broker b1 = new BrokerImpl("Client");
+		Broker b2 = new BrokerImpl("Server");
 		QueueBroker qb1 = new QueueBrokerImpl(b1);
 		Task t1 = new TaskImpl(qb1, new Runnable() {
 
@@ -40,7 +47,6 @@ public class TestQueue {
 			public void run() {
 				try {
 					MessageQueue mq = qb1.connect("Server", 6969);
-					Thread.sleep(500);
 					mq.close();
 
 					if (!mq.closed() || qb1.name() != "Client")
@@ -53,14 +59,13 @@ public class TestQueue {
 			}
 		});
 
-		Broker b2 = new BrokerImpl("Server");
 		QueueBroker qb2 = new QueueBrokerImpl(b2);
 		Task t2 = new TaskImpl(qb2, new Runnable() {
 
 			@Override
 			public void run() {
 				try {
-					MessageQueue mq = qb2.connect("Server", 6969);
+					MessageQueue mq = qb2.accept(6969);
 					Thread.sleep(500);
 					mq.close();
 
@@ -85,10 +90,11 @@ public class TestQueue {
 		System.out.println("Test 2." + n_of_test_instance + " in progress...");
 
 		Broker b1 = new BrokerImpl("Client");
+		Broker b2 = new BrokerImpl("Server");
+		
 		QueueBroker qb1 = new QueueBrokerImpl(b1);
 		Task t1 = new TaskImpl(qb1, client_runnable(qb1, port, "Server", "Je suis le message client ", times, true));
 
-		Broker b2 = new BrokerImpl("Server");
 		QueueBroker qb2 = new QueueBrokerImpl(b2);
 		Task t2 = new TaskImpl(qb2, server_runnable(qb2, port, times));
 
@@ -101,18 +107,19 @@ public class TestQueue {
 	// Create different clients on different servers.
 	private static void test3() throws Exception {
 		System.out.println("Test 3 in progress...");
-		int number_of_client = 5;
+		int number_of_client = 10;
 		Task[] task_created = new Task[number_of_client * 2];
 		int port = 10000;
 		int times = 10;
 
 		for (int i = 0; i < number_of_client; i++) {
-			Broker b1 = new BrokerImpl("Client");
+			Broker b1 = new BrokerImpl("Client " + (i + 1));
+			Broker b2 = new BrokerImpl("Server " + (i + 1));
+			
 			QueueBroker qb1 = new QueueBrokerImpl(b1);
 			task_created[2 * i] = new TaskImpl(qb1,
-					client_runnable(qb1, port + i, "Server", "Je suis le message client ", times, true));
+					client_runnable(qb1, port + i, "Server " + (i + 1), "Je suis le message client ", times, true));
 
-			Broker b2 = new BrokerImpl("Server");
 			QueueBroker qb2 = new QueueBrokerImpl(b2);
 			task_created[2 * i + 1] = new TaskImpl(qb2, server_runnable(qb2, port + i, times));
 		}
@@ -138,8 +145,8 @@ public class TestQueue {
 		for (int i = 0; i < number_of_client; i++) {
 			Broker b_client = new BrokerImpl("Client " + i);
 			QueueBroker qb_client = new QueueBrokerImpl(b_client);
-			task_created[i] = new TaskImpl(qb_client,
-					client_runnable(qb_client, port, "Server", "Je suis le message client ", 1, client_is_waiting_echo_message));
+			task_created[i] = new TaskImpl(qb_client, client_runnable(qb_client, port, "Server",
+					"Je suis le message client ", 1, client_is_waiting_echo_message));
 		}
 
 		for (int i = 0; i < task_created.length; i++) {
@@ -165,9 +172,9 @@ public class TestQueue {
 					for (int i = 0; i < times; i++) {
 						String message = msg_to_send + (i + 1);
 						byte[] byte_message = message.getBytes();
+						mq.send(byte_message, 0, byte_message.length);
 
 						if (wait_echo) {
-							mq.send(byte_message, 0, byte_message.length);
 							byte[] byte_receive = mq.receive();
 							String echo_message = new String(byte_receive);
 
@@ -183,11 +190,7 @@ public class TestQueue {
 					System.exit(-1);
 				} finally {
 					if (mq != null)
-						try {
-							mq.close();
-						} catch (Exception e) {
-							// TODO A retirer après implem
-						}
+						mq.close();
 				}
 			}
 		};
@@ -215,11 +218,7 @@ public class TestQueue {
 					System.exit(-1);
 				} finally {
 					if (mq != null)
-						try {
-							mq.close();
-						} catch (Exception e) {
-							// TODO A retirer après implem
-						}
+						mq.close();
 				}
 			}
 		};
@@ -233,23 +232,20 @@ public class TestQueue {
 			@Override
 			public void run() {
 				MessageQueue mq = null;
-				try {
-					while (true) {
+				while (true) {
+					try {
 						mq = qb.accept(port);
 						byte[] bytes_received = mq.receive();
 						mq.send(bytes_received, 0, bytes_received.length);
 					}
 
-				} catch (Exception e) {
-					e.printStackTrace();
-					System.exit(-1);
-				} finally {
-					if (mq != null)
-						try {
+					catch (Exception e) {
+						e.printStackTrace();
+						System.exit(-1);
+					} finally {
+						if (mq != null)
 							mq.close();
-						} catch (Exception e) {
-							// TODO A retirer après implem
-						}
+					}
 				}
 			}
 		};
