@@ -3,14 +3,17 @@ package implementation.API;
 import java.util.concurrent.TimeoutException;
 
 import implementation.DisconnectedException;
-import implementation.abstractclasses.MasterBroker;
 
-public abstract class QueueBroker extends MasterBroker {
+public abstract class QueueBroker {
+	protected Broker broker;
+	protected String name;
+
 	public QueueBroker(Broker broker) {
-		super.broker = broker;
+		this.broker = broker;
+		this.name = broker.name;
 	};
 
-	public abstract String name() throws Exception;
+	public abstract String name();
 
 	public abstract MessageQueue accept(int port) throws DisconnectedException;
 

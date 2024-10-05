@@ -67,25 +67,4 @@ public class MessageQueueImpl extends MessageQueue {
 		while (bytes_received < length)
 			bytes_received += channel.read(bytes, bytes_received, length - bytes_received);
 	}
-	
-	@Override
-	public int read(byte[] bytes, int offset, int length) {
-		throw new IllegalCallerException("Channel can't invoke this method");
-	}
-
-	@Override
-	public int write(byte[] bytes, int offset, int length) {
-		throw new IllegalCallerException("Channel can't invoke this method");
-	}
-
-	@Override
-	public void disconnect() {
-		throw new IllegalCallerException("Channel can't invoke this method");
-	}
-
-	@Override
-	public boolean disconnected() {
-		throw new IllegalCallerException("Channel can't invoke this method");
-	}
-
 }

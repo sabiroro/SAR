@@ -11,7 +11,7 @@ import implementation.API.Broker;
 import implementation.API.Channel;
 import implementation.API.Task;
 
-public class Test {
+public class TestChannel {
 	public static void main(String[] args) {
 		try {
 			test1();
@@ -495,6 +495,7 @@ public class Test {
 
 	public static void test5() throws Exception {
 		System.out.println("Test 5 in progress...");
+		System.out.println("	-> The test will wait a TimeoutException...");
 		BrokerManager.self.removeAllBrokers(); // To reset buffer
 
 		Broker b1 = new BrokerImpl("Device1");
@@ -512,7 +513,7 @@ public class Test {
 					e.printStackTrace();
 					System.exit(-1);
 				} catch (TimeoutException e) {
-					System.out.println("	-> Le timeout a bien été renvoyé !");
+					System.out.println("	-> The timeout was caugth successfully !");
 				}
 
 			}

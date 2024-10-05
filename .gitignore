@@ -1,5 +1,8 @@
 # To avoid Eclipse's metadata
 workspace/.metadata/
+.classpath
+.project
+.settings/
 
 # To avoid binary files
 bin/
