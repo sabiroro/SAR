@@ -15,7 +15,7 @@ La tâche actuelle peut également être récupérer via *getTask*.
 ## QueueBroker
 
 L'API utilise des **brokers**, nommés de façon unique par l'utilisateur, qui permettent de créer des **queuebrokers**. Ces queuebrokers permettent d'établir la communication entre 2 queuebrokers (le même ou des différents).
-> NB : Les méthodes implémentées pour les brokers classiques sont utilisées de façon interne et ne doivent être manipulées ; hormis s'il s'agit bien de ce que l'on souhaite faire, se référer alors à la [documentation des brokers et channels](/specification_1_channel.md).
+> NB : Les méthodes implémentées pour les brokers classiques sont utilisées de façon interne et ne doivent être manipulées ; hormis s'il s'agit bien de ce que l'on souhaite faire, se référer alors à la [documentation des brokers et channels](../task1/specification_1_channel.md).
 
 ### Connexion (accept)
 Un queuebroker peut ouvrir un port de connexion via la méthode *accept* pour permettre à un autre queuebroker de se connecter entre eux.  

@@ -8,7 +8,7 @@ Comme vu dans la spécification, une tâche est liée à un broker.
 Pour établir une communication entre 2 tâches, l'ajout d'un **BrokerManager** permet d'obtenir le broker d'une tâche sans devoir posséder une référence à travers les méthodes.  
 En plus, une classe **RdV** permet de créer un système de rendez-vous afin qu'un canal communique bien entre 2 brokers.
 Le diagramme suivant design alors le système de communication :  
-<img src="./Images_design_md/diag_classe.jpg" alt="Diagramme de classes du système" height="400">
+<img src="./Images_design_md/diag_classe_channel.jpg" alt="Diagramme de classes du système" height="400">
 
 
 ## Utilisation du buffer et communication full-duplex
