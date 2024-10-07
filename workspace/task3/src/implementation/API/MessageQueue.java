@@ -1,19 +1,16 @@
 package implementation.API;
 
-import implementation.Message;
-
 public abstract class MessageQueue {
 	public interface Listener {
-		void received(byte[] msg);
+		public void received(byte[] msg);
 
-		void sent(Message msg);
-
-		void closed();
+		public void closed();
 	}
 
 	public abstract void setListener(Listener l);
 
-	public abstract boolean send(Message msg);
+	public abstract boolean send(byte[] bytes);
+	public abstract boolean send(byte[] bytes, int offset, int length);
 
 	public abstract void close();
 

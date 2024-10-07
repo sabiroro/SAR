@@ -35,8 +35,8 @@ Le MessageQueue n'étant instancié par l'utilisateur, la méthode *setListener*
 
 On illustre ci-dessous un exemple d'utilisation de l'API avec un echo serveur.
 ```java
-QueueBroker client = new QueueBroker(new Broker("client"));
-QueueBroker server = new QueueBroker(new Broker("server"));
+QueueBroker client = new QueueBroker("client");
+QueueBroker server = new QueueBroker("server");
 
 client.connect("server", 6969, new ConnectListener() {
     @Override
