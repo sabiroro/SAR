@@ -1,6 +1,5 @@
 package implementation.queue;
 
-import implementation.Message;
 import implementation.API.MessageQueue;
 
 public class MessageQueueImpl extends MessageQueue {
@@ -12,7 +11,13 @@ public class MessageQueueImpl extends MessageQueue {
 	}
 
 	@Override
-	public boolean send(Message msg) {
+	public boolean send(byte[] bytes) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean send(byte[] bytes, int offset, int length) {
 		// TODO Auto-generated method stub
 		return false;
 	}
