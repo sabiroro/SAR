@@ -1,8 +1,10 @@
 package tests;
 
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeoutException;
 
 import implementation.BrokerManager;
+import implementation.DisconnectedException;
 import implementation.API.MessageQueue;
 import implementation.API.MessageQueue.Listener;
 import implementation.API.QueueBroker;
@@ -50,7 +52,6 @@ public class TestEvent {
 
 					@Override
 					public void closed() {
-						client.unbind(connection_port);
 						System.out.println("Connection closed");
 						sm.release(); // Allows to end the test
 					}
@@ -88,7 +89,7 @@ public class TestEvent {
 		System.out.println("Test 1 done !\n");
 	}
 
-	private static void echo_client(QueueBroker client, int connection_port, Semaphore sm) {
+	private static void echo_client(QueueBroker client, int connection_port, Semaphore sm) throws TimeoutException {
 		client.connect("server", connection_port, new ConnectListener() {
 			@Override
 			public void connected(MessageQueue queue) {
@@ -101,7 +102,6 @@ public class TestEvent {
 
 					@Override
 					public void closed() {
-						client.unbind(connection_port);
 						System.out.println("Connection closed");
 						sm.release();
 					}
@@ -117,7 +117,7 @@ public class TestEvent {
 		});
 	}
 
-	private static void echo_server(QueueBroker server, int connection_port) {
+	private static void echo_server(QueueBroker server, int connection_port) throws DisconnectedException {
 		server.bind(connection_port, new AcceptListener() {
 			@Override
 			public void accepted(MessageQueue queue) {

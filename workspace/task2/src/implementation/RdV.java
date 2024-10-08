@@ -39,29 +39,6 @@ public class RdV {
 		}
 
 		return channel_connect;
-
-		// Create an executor to manage the timeout
-//		ExecutorService executor = Executors.newSingleThreadExecutor();
-//		Callable<Boolean> callable = new Callable<Boolean>() {
-//			@Override
-//			public Boolean call() throws Exception {
-//				// Wait the rendez-vous creation
-//				while (channel_connect == null) {
-//					wait();
-//				}
-//				return true;
-//			}
-//		};
-//		// Create a future to execute the callable AND manage it
-//		Future<Boolean> future = executor.submit(callable);
-//		try {
-//			executor.shutdown(); // Deny new connections
-//			future.get(Broker.WAITING_TIME, TimeUnit.SECONDS); // Get result after a maximum waiting time
-//		} catch (InterruptedException | ExecutionException e) {
-//			e.printStackTrace();
-//		} catch (TimeoutException e) {
-//			return null; // Timed out
-//		}
 	}
 
 	protected synchronized Channel accept(Broker accepting_broker, int port) { // Broker expected a connection

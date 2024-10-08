@@ -15,3 +15,6 @@ bin/
 
 # To avoid adding class files
 *.class
+
+# To avoid merging files
+*.orig
