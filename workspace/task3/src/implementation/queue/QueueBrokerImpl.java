@@ -30,18 +30,18 @@ public class QueueBrokerImpl extends QueueBroker {
 		Thread t = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				task.post(new Runnable() {
-					@Override
-					public void run() {
-						try {
-							Channel channel = broker.accept(port);
-							MessageQueue msg_queue = new MessageQueueImpl(channel, task);
+				try {
+					Channel channel = broker.accept(port);
+					MessageQueue msg_queue = new MessageQueueImpl(channel, task);
+					task.post(new Runnable() {
+						@Override
+						public void run() {
 							listener.accepted(msg_queue);
-						} catch (DisconnectedException e) {
-							// Nothing there
 						}
-					}
-				});
+					});
+				} catch (DisconnectedException e) {
+					// Nothing there
+				}
 			}
 		});
 		t.start();
@@ -70,18 +70,23 @@ public class QueueBrokerImpl extends QueueBroker {
 		Thread t = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				task.post(new Runnable() {
-					@Override
-					public void run() {
-						try {
-							Channel channel = broker.connect(name, port);
-							MessageQueue msg_queue = new MessageQueueImpl(channel, task);
+				try {
+					Channel channel = broker.connect(name, port);
+					MessageQueue msg_queue = new MessageQueueImpl(channel, task);
+					task.post(new Runnable() {
+						@Override
+						public void run() {
 							listener.connected(msg_queue);
-						} catch (TimeoutException | DisconnectedException e) {
+						}
+					});
+				} catch (TimeoutException | DisconnectedException e) {
+					task.post(new Runnable() {
+						@Override
+						public void run() {
 							listener.refused();
 						}
-					}
-				});
+					});
+				}
 			}
 		});
 		t.start();

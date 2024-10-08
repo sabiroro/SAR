@@ -38,7 +38,19 @@ public class MessageQueueImpl extends MessageQueue {
 
 	@Override
 	public void close() {
-		channel.disconnect();
+		Thread t = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				channel.disconnect();
+				task.post(new Runnable() {
+					@Override
+					public void run() {
+						listener.closed();
+					}
+				});
+			}
+		});
+		t.start();
 	}
 
 	@Override
@@ -50,7 +62,7 @@ public class MessageQueueImpl extends MessageQueue {
 		Thread t = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				while (true) {
+				while (!channel.disconnected()) {
 					try {
 						// Read size
 						byte[] size_in_bytes = new byte[Integer.BYTES];
@@ -60,7 +72,13 @@ public class MessageQueueImpl extends MessageQueue {
 						// Read message
 						byte[] msg_in_bytes = new byte[size];
 						_receive(msg_in_bytes, size);
-						listener.received(msg_in_bytes);
+
+						task.post(new Runnable() {
+							@Override
+							public void run() {
+								listener.received(msg_in_bytes);
+							}
+						});
 					} catch (DisconnectedException e) {
 						// Nothing there
 					}
@@ -79,7 +97,7 @@ public class MessageQueueImpl extends MessageQueue {
 
 	private void _receive(byte[] bytes, int length) throws DisconnectedException {
 		int bytes_received = 0;
-		while (bytes_received < length)
+		while (bytes_received < length && !channel.disconnected())
 			bytes_received += channel.read(bytes, bytes_received, length - bytes_received);
 	}
 
@@ -91,19 +109,14 @@ public class MessageQueueImpl extends MessageQueue {
 		Thread t = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				task.post(new Runnable() {
-					@Override
-					public void run() {
-						byte[] size_in_bytes = ByteBuffer.allocate(Integer.BYTES).putInt(msg.length).array();
+				byte[] size_in_bytes = ByteBuffer.allocate(Integer.BYTES).putInt(msg.length).array();
 
-						try {
-							_send(size_in_bytes, 0, Integer.BYTES); // Send size
-							_send(msg.bytes, msg.offset, msg.length); // Send message
-						} catch (DisconnectedException e) {
-							// Nothing there
-						}
-					}
-				});
+				try {
+					_send(size_in_bytes, 0, Integer.BYTES); // Send size
+					_send(msg.bytes, msg.offset, msg.length); // Send message
+				} catch (DisconnectedException e) {
+					// Nothing there
+				}
 			}
 		});
 		t.start();

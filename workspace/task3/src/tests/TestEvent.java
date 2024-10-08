@@ -5,6 +5,7 @@ import java.util.concurrent.TimeoutException;
 
 import implementation.BrokerManager;
 import implementation.DisconnectedException;
+import implementation.EventPump;
 import implementation.API.MessageQueue;
 import implementation.API.MessageQueue.Listener;
 import implementation.API.QueueBroker;
@@ -25,16 +26,18 @@ public class TestEvent {
 			test3(20);
 			BrokerManager.self.removeAllBrokers();
 			test4();
+			System.exit(0);
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println("	The test has failed : " + e.getMessage());
+			System.exit(-1);
 		}
 	}
 
 	// Echo server (from the specification doc)
 	public static void test1() throws Exception {
 		System.out.println("Test 1 in progress...");
-		Semaphore sm = new Semaphore(0); // Allows to block the execution until the echo message
+		Semaphore sm = new Semaphore(-1); // Allows to block the execution until the echo message
 
 		QueueBroker client = new QueueBrokerImpl("client");
 		QueueBroker server = new QueueBrokerImpl("server");
@@ -46,13 +49,13 @@ public class TestEvent {
 				queue.setListener(new Listener() {
 					@Override
 					public void received(byte[] msg) {
-						System.out.println("Echo message : " + new String(msg));
+						System.out.println("	-> Message echoed : " + new String(msg));
 						queue.close();
 					}
 
 					@Override
 					public void closed() {
-						System.out.println("Connection closed");
+						System.out.println("	-> Connection closed (client)");
 						sm.release(); // Allows to end the test
 					}
 				});
@@ -62,7 +65,8 @@ public class TestEvent {
 
 			@Override
 			public void refused() {
-				System.out.println("Connection refused");
+				System.out.println("	-> Connection refused (client)");
+				throw new IllegalStateException("	-> Connection refused (client)");
 			}
 		});
 
@@ -73,19 +77,21 @@ public class TestEvent {
 					@Override
 					public void received(byte[] msg) {
 						queue.send(msg);
-						queue.close();
+						queue.close(); // TODO prbl de déconnexion
 					}
 
 					@Override
 					public void closed() {
 						server.unbind(connection_port);
-						System.out.println("Connection closed");
+						System.out.println("	-> Connection closed (server)");
+						sm.release(); // Allows to end the test
 					}
 				});
 			}
 		});
 
-		sm.acquire(); // Waits the end of the test
+		sm.acquire(2); // Waits the end of the test
+		EventPump.self.stopPump();
 		System.out.println("Test 1 done !\n");
 	}
 
