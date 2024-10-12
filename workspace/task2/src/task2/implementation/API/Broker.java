@@ -1,11 +1,8 @@
-package implementation.API;
+package task2.implementation.API;
 
 import java.util.concurrent.TimeoutException;
 
-import task1.implementation.broker.DisconnectedException;
-import task2.implementation.API.Broker;
-import task2.implementation.API.Channel;
-
+import task2.implementation.broker.DisconnectedException;
 
 public abstract class Broker {
 	String name;

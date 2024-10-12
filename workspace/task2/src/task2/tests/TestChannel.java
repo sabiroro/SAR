@@ -1,15 +1,15 @@
-package tests;
+package task2.tests;
 
 import java.nio.ByteBuffer;
 import java.util.concurrent.TimeoutException;
 
-import task1.implementation.API.Broker;
-import task1.implementation.API.Channel;
-import task1.implementation.API.Task;
-import task1.implementation.broker.BrokerImpl;
-import task1.implementation.broker.BrokerManager;
-import task1.implementation.broker.DisconnectedException;
-import task1.implementation.broker.TaskImpl;
+import task2.implementation.API.Broker;
+import task2.implementation.API.Channel;
+import task2.implementation.API.Task;
+import task2.implementation.broker.BrokerImpl;
+import task2.implementation.broker.BrokerManager;
+import task2.implementation.broker.DisconnectedException;
+import task2.implementation.broker.TaskImpl;
 
 public class TestChannel {
 	public static void main(String[] args) {

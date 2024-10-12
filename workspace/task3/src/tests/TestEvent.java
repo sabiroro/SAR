@@ -3,15 +3,15 @@ package tests;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeoutException;
 
-import implementation.BrokerManager;
-import implementation.DisconnectedException;
 import implementation.EventPump;
-import implementation.API.MessageQueue;
-import implementation.API.MessageQueue.Listener;
-import implementation.API.QueueBroker;
-import implementation.API.QueueBroker.AcceptListener;
-import implementation.API.QueueBroker.ConnectListener;
-import implementation.queue.QueueBrokerImpl;
+import task1.implementation.broker.BrokerManager;
+import task1.implementation.broker.DisconnectedException;
+import task2.implementation.API.MessageQueue;
+import task2.implementation.API.QueueBroker;
+import task2.implementation.API.MessageQueue.Listener;
+import task2.implementation.API.QueueBroker.AcceptListener;
+import task2.implementation.API.QueueBroker.ConnectListener;
+import task2.implementation.queue.QueueBrokerImpl;
 
 public class TestEvent {
 	public static void main(String[] args) {

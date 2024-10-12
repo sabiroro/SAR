@@ -1,9 +1,6 @@
-package implementation;
+package task1.implementation.broker;
 
 import java.util.HashMap;
-
-import task1.implementation.broker.BrokerImpl;
-import task1.implementation.broker.BrokerManager;
 
 public class BrokerManager {
 	public static BrokerManager self; // To create a singleton

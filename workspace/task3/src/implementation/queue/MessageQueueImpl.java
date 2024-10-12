@@ -2,11 +2,11 @@ package implementation.queue;
 
 import java.nio.ByteBuffer;
 
-import implementation.DisconnectedException;
 import implementation.Message;
-import implementation.API.Channel;
-import implementation.API.MessageQueue;
-import implementation.API.Task;
+import task1.implementation.broker.DisconnectedException;
+import task2.implementation.API.Channel;
+import task2.implementation.API.MessageQueue;
+import task2.implementation.API.Task;
 
 public class MessageQueueImpl extends MessageQueue {
 	private Channel channel;

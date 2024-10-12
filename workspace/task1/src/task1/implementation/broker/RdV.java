@@ -1,9 +1,7 @@
-package implementation;
+package task1.implementation.broker;
 
-import task1.implementation.broker.ChannelImpl;
-import task1.implementation.broker.CircularBuffer;
-import task2.implementation.API.Broker;
-import task2.implementation.API.Channel;
+import task1.implementation.API.Broker;
+import task1.implementation.API.Channel;
 
 public class RdV {
 	Broker ba; // Accepting broker

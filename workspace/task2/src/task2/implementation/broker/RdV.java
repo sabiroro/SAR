@@ -1,7 +1,5 @@
-package implementation;
+package task2.implementation.broker;
 
-import task1.implementation.broker.ChannelImpl;
-import task1.implementation.broker.CircularBuffer;
 import task2.implementation.API.Broker;
 import task2.implementation.API.Channel;
 

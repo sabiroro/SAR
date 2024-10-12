@@ -2,8 +2,11 @@ package implementation.API;
 
 import java.util.concurrent.TimeoutException;
 
-import implementation.BrokerImpl;
-import implementation.DisconnectedException;
+import task1.implementation.broker.BrokerImpl;
+import task1.implementation.broker.DisconnectedException;
+import task2.implementation.API.Broker;
+import task2.implementation.API.MessageQueue;
+
 
 public abstract class QueueBroker {
 	public Broker broker;

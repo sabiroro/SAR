@@ -1,10 +1,7 @@
-package implementation;
+package task1.implementation.broker;
 
-import task1.implementation.broker.ChannelImpl;
-import task1.implementation.broker.CircularBuffer;
-import task1.implementation.broker.DisconnectedException;
-import task2.implementation.API.Broker;
-import task2.implementation.API.Channel;
+import task1.implementation.API.Broker;
+import task1.implementation.API.Channel;
 
 public class ChannelImpl extends Channel {
 	final int CIRCULAR_BUFFER_SIZE = 10;
@@ -97,7 +94,7 @@ public class ChannelImpl extends Channel {
 					}
 					if (is_dangling)
 						return length; // To drop bytes if we want to write
-					
+
 					try {
 						in.wait();
 					} catch (InterruptedException e) {

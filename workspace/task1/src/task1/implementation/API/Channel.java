@@ -1,7 +1,6 @@
-package implementation.API;
+package task1.implementation.API;
 
 import task1.implementation.broker.DisconnectedException;
-import task2.implementation.API.Broker;
 
 public abstract class Channel {
 	Broker broker;

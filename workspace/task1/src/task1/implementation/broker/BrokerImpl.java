@@ -1,4 +1,4 @@
-package implementation;
+package task1.implementation.broker;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -9,16 +9,12 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import task1.implementation.broker.BrokerImpl;
-import task1.implementation.broker.BrokerManager;
-import task1.implementation.broker.DisconnectedException;
-import task1.implementation.broker.RdV;
-import task2.implementation.API.Broker;
-import task2.implementation.API.Channel;
+import task1.implementation.API.Broker;
+import task1.implementation.API.Channel;
 
 public class BrokerImpl extends Broker {
 	public static final int WAITING_TIME = 15; // Waiting time before a timeout in seconds
-	public ConcurrentHashMap<Integer, RdV> rendez_vous; // To store port and rendez-vous effective
+	ConcurrentHashMap<Integer, RdV> rendez_vous; // To store port and rendez-vous effective
 
 	public BrokerImpl(String name) throws Exception {
 		super(name);
@@ -98,7 +94,7 @@ public class BrokerImpl extends Broker {
 	 * @param port : Connection's port of this broker to a rendez-vous
 	 * @return the rdv if exists, null otherwise
 	 */
-	public RdV getRendezVous(int port) {
+	private RdV getRendezVous(int port) {
 		RdV rdv = rendez_vous.get(port);
 		return rdv;
 	}
