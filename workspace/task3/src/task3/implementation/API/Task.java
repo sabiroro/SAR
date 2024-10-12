@@ -1,6 +1,4 @@
-package implementation.API;
-
-import task2.implementation.API.Task;
+package task3.implementation.API;
 
 public abstract class Task extends Thread {
 	public abstract void post(Runnable r);

@@ -1,6 +1,6 @@
-package implementation;
+package task3.implementation.event;
 
-import task2.implementation.API.Task;
+import task3.implementation.API.Task;
 
 public class TaskImpl extends Task {
 	EventPump pump;

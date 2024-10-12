@@ -1,4 +1,4 @@
-package implementation;
+package task3.implementation.event;
 
 import java.util.LinkedList;
 

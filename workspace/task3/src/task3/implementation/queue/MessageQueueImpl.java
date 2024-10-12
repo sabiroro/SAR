@@ -1,12 +1,12 @@
-package implementation.queue;
+package task3.implementation.queue;
 
 import java.nio.ByteBuffer;
 
-import implementation.Message;
-import task1.implementation.broker.DisconnectedException;
 import task2.implementation.API.Channel;
-import task2.implementation.API.MessageQueue;
-import task2.implementation.API.Task;
+import task2.implementation.broker.DisconnectedException;
+import task3.implementation.API.MessageQueue;
+import task3.implementation.API.Task;
+import task3.implementation.event.Message;
 
 public class MessageQueueImpl extends MessageQueue {
 	private Channel channel;

@@ -1,4 +1,4 @@
-package implementation;
+package task3.implementation.event;
 
 public class Message {
 	public byte[] bytes;

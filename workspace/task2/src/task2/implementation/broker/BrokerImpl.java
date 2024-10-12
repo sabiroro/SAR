@@ -14,7 +14,7 @@ import task2.implementation.API.Channel;
 
 public class BrokerImpl extends Broker {
 	public static final int WAITING_TIME = 15; // Waiting time before a timeout in seconds
-	ConcurrentHashMap<Integer, RdV> rendez_vous; // To store port and rendez-vous effective
+	public ConcurrentHashMap<Integer, RdV> rendez_vous; // To store port and rendez-vous effective
 
 	public BrokerImpl(String name) throws Exception {
 		super(name);
@@ -94,7 +94,7 @@ public class BrokerImpl extends Broker {
 	 * @param port : Connection's port of this broker to a rendez-vous
 	 * @return the rdv if exists, null otherwise
 	 */
-	private RdV getRendezVous(int port) {
+	public RdV getRendezVous(int port) {
 		RdV rdv = rendez_vous.get(port);
 		return rdv;
 	}

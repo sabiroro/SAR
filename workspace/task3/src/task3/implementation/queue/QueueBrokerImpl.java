@@ -1,17 +1,16 @@
-package implementation.queue;
+package task3.implementation.queue;
 
 import java.util.concurrent.TimeoutException;
 
-import task1.implementation.broker.BrokerImpl;
-import task1.implementation.broker.BrokerManager;
-import task1.implementation.broker.DisconnectedException;
-import task1.implementation.broker.RdV;
-import task1.implementation.broker.TaskImpl;
 import task2.implementation.API.Channel;
-import task2.implementation.API.MessageQueue;
-import task2.implementation.API.QueueBroker;
-import task2.implementation.API.Task;
-import task2.implementation.queue.MessageQueueImpl;
+import task2.implementation.broker.BrokerImpl;
+import task2.implementation.broker.BrokerManager;
+import task2.implementation.broker.DisconnectedException;
+import task2.implementation.broker.RdV;
+import task3.implementation.API.MessageQueue;
+import task3.implementation.API.QueueBroker;
+import task3.implementation.API.Task;
+import task3.implementation.event.TaskImpl;
 
 public class QueueBrokerImpl extends QueueBroker {
 	private Task task;
