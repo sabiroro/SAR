@@ -5,12 +5,10 @@ import java.util.LinkedList;
 public class EventPump extends Thread {
 	public static EventPump self;
 	public LinkedList<Runnable> queue;
-	private boolean is_running;
 	
 	// To ensure a singleton
 	static {
 		self = new EventPump();
-		self.is_running = true;
 		self.start();
 	}
 	
@@ -24,7 +22,7 @@ public class EventPump extends Thread {
 
 	public synchronized void run() {
 		Runnable r;
-		while (true && self.is_running) {
+		while (true) {
 			r = queue.poll();
 			while (r != null) {
 				r.run();
@@ -47,8 +45,8 @@ public class EventPump extends Thread {
 		}
 	}
 	
-	public synchronized void stopPump() {
-		self.is_running = false;
+	public synchronized void restartPump() {
+		self.queue.clear();
 		notify();
 	}
 }

@@ -122,7 +122,7 @@ public class ChannelImpl extends Channel {
 	public void disconnect() {
 		synchronized (this) {
 			if (is_disconnected)
-				throw new IllegalStateException("The channel is already disconnected");
+				return;
 			is_disconnected = true;
 			remote_channel.is_dangling = true; // Half-disconnected flag of the remote channel
 		}

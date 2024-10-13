@@ -5,23 +5,26 @@ import java.nio.ByteBuffer;
 import task2.implementation.API.Channel;
 import task2.implementation.broker.DisconnectedException;
 import task3.implementation.API.MessageQueue;
-import task3.implementation.API.Task;
 import task3.implementation.event.Message;
 
 public class MessageQueueImpl extends MessageQueue {
 	private Channel channel;
-	private Task task;
+	private task3.implementation.API.Task task_pump;
 	private Listener listener;
 
-	public MessageQueueImpl(Channel channel, Task task) throws DisconnectedException {
+	public MessageQueueImpl(Channel channel, task3.implementation.API.Task task) throws DisconnectedException {
 		this.channel = channel;
-		this.task = task;
-		receive();
+		this.task_pump = task;
 	}
 
 	@Override
 	public void setListener(Listener l) {
 		this.listener = l;
+		try {
+			receive();
+		} catch (DisconnectedException e) {
+			// Nothing there
+		}
 	}
 
 	@Override
@@ -32,25 +35,26 @@ public class MessageQueueImpl extends MessageQueue {
 
 	@Override
 	public boolean send(byte[] bytes, int offset, int length) {
-		Message msg = new Message(bytes, 0, bytes.length); // TODO A nous de segmenter les msgs ??
+		Message msg = new Message(bytes, 0, bytes.length);
 		return send(msg);
 	}
 
 	@Override
 	public void close() {
-		Thread t = new Thread(new Runnable() {
+		Runnable r = new Runnable() {
 			@Override
 			public void run() {
 				channel.disconnect();
-				task.post(new Runnable() {
+				task_pump.post(new Runnable() {
 					@Override
 					public void run() {
 						listener.closed();
 					}
 				});
 			}
-		});
-		t.start();
+		};
+
+		new task2.implementation.broker.TaskImpl(channel.broker, r); // Create and launch task
 	}
 
 	@Override
@@ -59,7 +63,7 @@ public class MessageQueueImpl extends MessageQueue {
 	}
 
 	private void receive() throws DisconnectedException {
-		Thread t = new Thread(new Runnable() {
+		Runnable r = new Runnable() {
 			@Override
 			public void run() {
 				while (!channel.disconnected()) {
@@ -73,7 +77,7 @@ public class MessageQueueImpl extends MessageQueue {
 						byte[] msg_in_bytes = new byte[size];
 						_receive(msg_in_bytes, size);
 
-						task.post(new Runnable() {
+						task_pump.post(new Runnable() {
 							@Override
 							public void run() {
 								listener.received(msg_in_bytes);
@@ -84,9 +88,9 @@ public class MessageQueueImpl extends MessageQueue {
 					}
 				}
 			}
-		});
-		t.setDaemon(true);
-		t.start();
+		};
+
+		new task2.implementation.broker.TaskImpl(channel.broker, r); // Create and launch task
 	}
 
 	private void _send(byte[] bytes, int offset, int length) throws DisconnectedException {
@@ -106,7 +110,7 @@ public class MessageQueueImpl extends MessageQueue {
 			return false;
 
 		// Separate the thread-world with the event world
-		Thread t = new Thread(new Runnable() {
+		Runnable r = new Runnable() {
 			@Override
 			public void run() {
 				byte[] size_in_bytes = ByteBuffer.allocate(Integer.BYTES).putInt(msg.length).array();
@@ -118,8 +122,9 @@ public class MessageQueueImpl extends MessageQueue {
 					// Nothing there
 				}
 			}
-		});
-		t.start();
+		};
+
+		new task2.implementation.broker.TaskImpl(channel.broker, r); // Create and launch task
 
 		return true;
 	}

@@ -3,7 +3,7 @@ package task2.implementation.API;
 import task2.implementation.broker.DisconnectedException;
 
 public abstract class Channel {
-	Broker broker;
+	public Broker broker;
 	
 	public Channel(Broker b) {
 		this.broker = b;
