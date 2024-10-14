@@ -12,6 +12,13 @@ public class TaskImpl extends Task {
 	
 	public TaskImpl(QueueBroker b, Runnable r) {
 		super(b, r);
+		this.setName(b.name());
+		this.start();
+	}
+	
+	public TaskImpl(Broker b, Runnable r, String name) {
+		super(b, r);
+		this.setName(name);
 		this.start();
 	}
 

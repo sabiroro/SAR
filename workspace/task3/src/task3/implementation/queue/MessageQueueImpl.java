@@ -9,22 +9,18 @@ import task3.implementation.event.Message;
 
 public class MessageQueueImpl extends MessageQueue {
 	private Channel channel;
-	private task3.implementation.API.Task task_pump;
+	//private task3.implementation.API.Task task_pump;
 	private Listener listener;
 
 	public MessageQueueImpl(Channel channel, task3.implementation.API.Task task) throws DisconnectedException {
 		this.channel = channel;
-		this.task_pump = task;
+		//this.task_pump = task;
 	}
 
 	@Override
 	public void setListener(Listener l) {
 		this.listener = l;
-		try {
-			receive();
-		} catch (DisconnectedException e) {
-			// Nothing there
-		}
+		receive();
 	}
 
 	@Override
@@ -45,6 +41,7 @@ public class MessageQueueImpl extends MessageQueue {
 			@Override
 			public void run() {
 				channel.disconnect();
+				task3.implementation.API.Task task_pump = new task3.implementation.event.TaskImpl();
 				task_pump.post(new Runnable() {
 					@Override
 					public void run() {
@@ -62,7 +59,7 @@ public class MessageQueueImpl extends MessageQueue {
 		return channel.disconnected();
 	}
 
-	private void receive() throws DisconnectedException {
+	private void receive() {
 		Runnable r = new Runnable() {
 			@Override
 			public void run() {
@@ -77,6 +74,7 @@ public class MessageQueueImpl extends MessageQueue {
 						byte[] msg_in_bytes = new byte[size];
 						_receive(msg_in_bytes, size);
 
+						task3.implementation.API.Task task_pump = new task3.implementation.event.TaskImpl();
 						task_pump.post(new Runnable() {
 							@Override
 							public void run() {
@@ -90,7 +88,7 @@ public class MessageQueueImpl extends MessageQueue {
 			}
 		};
 
-		new task2.implementation.broker.TaskImpl(channel.broker, r); // Create and launch task
+		new task2.implementation.broker.TaskImpl(channel.broker, r, "Receive thread"); // Create and launch task
 	}
 
 	private void _send(byte[] bytes, int offset, int length) throws DisconnectedException {
@@ -124,7 +122,7 @@ public class MessageQueueImpl extends MessageQueue {
 			}
 		};
 
-		new task2.implementation.broker.TaskImpl(channel.broker, r); // Create and launch task
+		new task2.implementation.broker.TaskImpl(channel.broker, r, "send thread"); // Create and launch task
 
 		return true;
 	}

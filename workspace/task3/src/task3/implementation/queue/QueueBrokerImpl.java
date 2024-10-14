@@ -11,13 +11,13 @@ import task3.implementation.API.QueueBroker;
 
 public class QueueBrokerImpl extends QueueBroker {
 	//private final int CONNECTION_QUEUE_SIZE = 50; // Represents the maximum port number opens at the same time 
-	private task3.implementation.API.Task task;
+	//private task3.implementation.API.Task task;
 	private HashMap<Integer, Boolean> connection_port_list; // To know binding and using port (true for a connection
 															// port, false for an accept port)
 
 	public QueueBrokerImpl(String name) throws Exception {
 		super(name);
-		task = new task3.implementation.event.TaskImpl();
+		//task = new task3.implementation.event.TaskImpl();
 		connection_port_list = new HashMap<>();
 	}
 
@@ -34,6 +34,7 @@ public class QueueBrokerImpl extends QueueBroker {
 				try {
 					while (true) { // TODO rajouter un backlog
 						Channel channel = broker.accept(port);
+						task3.implementation.API.Task task = new task3.implementation.event.TaskImpl();
 						MessageQueue msg_queue = new MessageQueueImpl(channel, task);
 						task.post(new Runnable() {
 							@Override
@@ -48,7 +49,7 @@ public class QueueBrokerImpl extends QueueBroker {
 			}
 		};
 
-		new task2.implementation.broker.TaskImpl(this.broker, r); // Create and launch task
+		new task2.implementation.broker.TaskImpl(this.broker, r, "Bind thread"); // Create and launch task
 
 		return true;
 	}
@@ -75,6 +76,7 @@ public class QueueBrokerImpl extends QueueBroker {
 			public void run() {
 				try {
 					Channel channel = broker.connect(name, port);
+					task3.implementation.API.Task task = new task3.implementation.event.TaskImpl();
 					MessageQueue msg_queue = new MessageQueueImpl(channel, task);
 					task.post(new Runnable() {
 						@Override
@@ -83,6 +85,7 @@ public class QueueBrokerImpl extends QueueBroker {
 						}
 					});
 				} catch (TimeoutException | DisconnectedException e) {
+					task3.implementation.API.Task task = new task3.implementation.event.TaskImpl();
 					connection_port_list.remove((Integer) port);
 					task.post(new Runnable() {
 						@Override
@@ -94,7 +97,7 @@ public class QueueBrokerImpl extends QueueBroker {
 			}
 		};
 
-		new task2.implementation.broker.TaskImpl(this.broker, r); // Create and launch task
+		new task2.implementation.broker.TaskImpl(this.broker, r, "Connect thread"); // Create and launch task
 
 		return true;
 	}

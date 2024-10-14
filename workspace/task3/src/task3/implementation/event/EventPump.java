@@ -9,6 +9,7 @@ public class EventPump extends Thread {
 	// To ensure a singleton
 	static {
 		self = new EventPump();
+		self.setName("Pump");
 		self.start();
 	}
 	
@@ -48,5 +49,9 @@ public class EventPump extends Thread {
 	public synchronized void restartPump() {
 		self.queue.clear();
 		notify();
+	}
+	
+	public synchronized void stopPump() {
+		self.queue.clear();
 	}
 }

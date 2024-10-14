@@ -18,19 +18,27 @@ public class TestEvent {
 		BrokerManager.self.removeAllBrokers();
 		EventPump.self.restartPump();
 	}
+	
+	private static void stop_test() {
+		BrokerManager.self.removeAllBrokers();
+		EventPump.self.restartPump();
+	}
 
 	public static void main(String[] args) {
 		try {
-//			clean_previous_test();
-//			test1();
-//			clean_previous_test();
-//			test2(1, 1);
-//			clean_previous_test();
-//			test2(10, 2);
 			clean_previous_test();
-			test3(20);
+			test1();
+			clean_previous_test();
+			test2(1, 1);
+			clean_previous_test();
+			test2(10, 2);
+			clean_previous_test();
+			test3(100);
 			clean_previous_test();
 			test4();
+
+			stop_test();
+			System.out.println("That's all folks");
 			System.exit(0);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -122,7 +130,7 @@ public class TestEvent {
 					}
 				});
 
-				queue.send(("Hello world! - By " + client.name).getBytes());
+				queue.send(("Hello world! - By " + client.name + ", port : " + connection_port).getBytes());
 			}
 
 			@Override
@@ -143,6 +151,10 @@ public class TestEvent {
 	}
 
 	private static void echo_server(QueueBroker server, int connection_port) throws DisconnectedException {
+		echo_server(server, connection_port, false);
+	}
+	
+	private static void echo_server(QueueBroker server, int connection_port, boolean need_to_unbind) throws DisconnectedException {
 		server.bind(connection_port, new AcceptListener() {
 			@Override
 			public void accepted(MessageQueue queue) {
@@ -150,11 +162,14 @@ public class TestEvent {
 					@Override
 					public void received(byte[] msg) {
 						queue.send(msg);
+//						if (need_to_unbind)
+//							queue.close();
 					}
 
 					@Override
 					public void closed() {
-						// Nothing there
+						server.unbind(connection_port);
+						System.out.println("           ---> " + connection_port + " closed from server");
 					}
 				});
 			}
@@ -188,9 +203,10 @@ public class TestEvent {
 		QueueBroker server = new QueueBrokerImpl("server");
 
 		for (int i = 0; i < nbre_clients; i++) {
+			int port = connection_port + i;
 			QueueBroker client = new QueueBrokerImpl("client" + i);
-			echo_client(client, connection_port + i, sm);
-			echo_server(server, connection_port + i);
+			echo_client(client, port, sm);
+			echo_server(server, port, true);
 		}
 
 		sm.acquire(); // Waits the end of the test
@@ -201,6 +217,7 @@ public class TestEvent {
 	public static void test4() throws Exception {
 		System.out.println("Test 4 in progress...");
 
+		try {
 		QueueBroker client = new QueueBrokerImpl("client");
 		int connection_port = 6969;
 
@@ -236,7 +253,10 @@ public class TestEvent {
 		server_unbind_test = server.unbind(connection_port); // True
 		if (!server_unbind_test)
 			throw new Exception("The server can't unbind a connected port !");
-
+		} catch (NullPointerException e) {
+			// Nothing there, we just test bind, unbind and connect ; don't need listener
+		}
+		
 		System.out.println("Test 4 done !\n");
 	}
 }

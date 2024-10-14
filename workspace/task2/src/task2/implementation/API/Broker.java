@@ -5,7 +5,7 @@ import java.util.concurrent.TimeoutException;
 import task2.implementation.broker.DisconnectedException;
 
 public abstract class Broker {
-	String name;
+	protected String name;
 	Broker broker;
 	
 	public Broker(String name) {
