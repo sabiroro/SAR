@@ -217,7 +217,6 @@ public class TestEvent {
 	public static void test4() throws Exception {
 		System.out.println("Test 4 in progress...");
 
-		try {
 		QueueBroker client = new QueueBrokerImpl("client");
 		int connection_port = 6969;
 
@@ -253,9 +252,10 @@ public class TestEvent {
 		server_unbind_test = server.unbind(connection_port); // True
 		if (!server_unbind_test)
 			throw new Exception("The server can't unbind a connected port !");
-		} catch (NullPointerException e) {
-			// Nothing there, we just test bind, unbind and connect ; don't need listener
-		}
+		
+		server_bind_test = server.bind(connection_port, null); // True
+		if (!server_bind_test)
+			throw new Exception("The server can't bind an old connection port !");
 		
 		System.out.println("Test 4 done !\n");
 	}

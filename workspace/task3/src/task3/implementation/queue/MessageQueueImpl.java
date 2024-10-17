@@ -3,18 +3,17 @@ package task3.implementation.queue;
 import java.nio.ByteBuffer;
 
 import task2.implementation.API.Channel;
+import task2.implementation.broker.BrokerManager;
 import task2.implementation.broker.DisconnectedException;
 import task3.implementation.API.MessageQueue;
 import task3.implementation.event.Message;
 
 public class MessageQueueImpl extends MessageQueue {
 	private Channel channel;
-	//private task3.implementation.API.Task task_pump;
 	private Listener listener;
 
 	public MessageQueueImpl(Channel channel, task3.implementation.API.Task task) throws DisconnectedException {
 		this.channel = channel;
-		//this.task_pump = task;
 	}
 
 	@Override
@@ -122,7 +121,8 @@ public class MessageQueueImpl extends MessageQueue {
 			}
 		};
 
-		new task2.implementation.broker.TaskImpl(channel.broker, r, "send thread"); // Create and launch task
+		// Create and launch task (by using the pool)
+		BrokerManager.self.getExecutor().execute(r);
 
 		return true;
 	}

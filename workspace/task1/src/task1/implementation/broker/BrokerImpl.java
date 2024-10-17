@@ -23,7 +23,7 @@ public class BrokerImpl extends Broker {
 	}
 
 	@Override
-	public synchronized Channel accept(int port) throws DisconnectedException {
+	public Channel accept(int port) throws DisconnectedException {
 		RdV rdv = null;
 		synchronized (rendez_vous) {
 			rdv = getRendezVous(port);
@@ -39,7 +39,7 @@ public class BrokerImpl extends Broker {
 	}
 
 	@Override
-	public synchronized Channel connect(String name, int port) throws TimeoutException {
+	public Channel connect(String name, int port) throws TimeoutException {
 		BrokerImpl target_broker = BrokerManager.self.get(name);
 
 		// The target broker doesn't exist yet
