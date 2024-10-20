@@ -14,17 +14,12 @@ public class RdV {
 	/**
 	 * Allows to wait the creation of the other channel
 	 */
-	private void _wait() {
-		while (channel_accept == null || channel_connect == null) {
-			try {
-				wait();
-			} catch (InterruptedException e) {
-				// Nothing there
-			}
-		}
+	private void _wait() throws InterruptedException {
+		while (channel_accept == null || channel_connect == null)
+			wait();
 	}
 
-	synchronized Channel connect(Broker connecting_broker, int port) { // Broker wanted a connection
+	synchronized Channel connect(Broker connecting_broker, int port) throws InterruptedException { // Broker wanted a connection
 		this.bc = connecting_broker;
 		this.channel_connect = new ChannelImpl(bc, port);
 		if (channel_accept == null) {
@@ -41,7 +36,7 @@ public class RdV {
 		return channel_connect;
 	}
 
-	protected synchronized Channel accept(Broker accepting_broker, int port) { // Broker expected a connection
+	protected synchronized Channel accept(Broker accepting_broker, int port) throws InterruptedException { // Broker expected a connection
 		this.ba = accepting_broker;
 		this.channel_accept = new ChannelImpl(ba, port);
 		if (channel_connect == null) {

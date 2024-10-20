@@ -61,7 +61,7 @@ public class TestChannel {
 					if (!c1.disconnected())
 						throw new IllegalStateException("The channels seem to remain connected...");
 
-				} catch (NullPointerException | IllegalStateException | DisconnectedException e) {
+				} catch (NullPointerException | IllegalStateException | DisconnectedException | InterruptedException e) {
 					e.printStackTrace();
 					System.exit(-1);
 				}
@@ -86,7 +86,7 @@ public class TestChannel {
 					if (!c2.disconnected())
 						throw new IllegalStateException("The channels seem to remain connected...");
 
-				} catch (NullPointerException | IllegalStateException | TimeoutException e) {
+				} catch (NullPointerException | IllegalStateException | TimeoutException | InterruptedException e) {
 					e.printStackTrace();
 					System.exit(-1);
 				}
@@ -114,7 +114,7 @@ public class TestChannel {
 				try {
 					Channel c1 = b1.accept(6969);
 					c1.write("hello world".getBytes(), 0, 5);
-				} catch (DisconnectedException e) {
+				} catch (DisconnectedException | InterruptedException e) {
 					// Nothing there
 				}
 			}
@@ -127,7 +127,7 @@ public class TestChannel {
 				Channel c2 = null;
 				try {
 					c2 = b2.connect("pc1", 6969);
-				} catch (TimeoutException e1) {
+				} catch (TimeoutException | InterruptedException e1) {
 					e1.printStackTrace();
 				}
 				try {
@@ -184,7 +184,7 @@ public class TestChannel {
 					client_channel.disconnect();
 				}
 
-				catch (DisconnectedException | TimeoutException e) {
+				catch (DisconnectedException | TimeoutException | InterruptedException e) {
 					// Nothing there
 				}
 
@@ -217,7 +217,7 @@ public class TestChannel {
 					serv_channel.disconnect();
 				}
 
-				catch (DisconnectedException e) {
+				catch (DisconnectedException | InterruptedException e) {
 					// Nothing there
 				}
 				System.out.println("	-> Echo message wrote by server !");
@@ -276,7 +276,7 @@ public class TestChannel {
 								byte_message_sent1.length - number_of_bytes_read);
 					}
 					client1_channel.disconnect();
-				} catch (DisconnectedException | TimeoutException e) {
+				} catch (DisconnectedException | TimeoutException | InterruptedException e) {
 					// Nothing there
 				}
 				System.out.println("	-> Echo message wrote by client 1 !");
@@ -307,7 +307,7 @@ public class TestChannel {
 								byte_message_sent2.length - number_of_bytes_read);
 					}
 					client2_channel.disconnect();
-				} catch (DisconnectedException | TimeoutException e) {
+				} catch (DisconnectedException | TimeoutException | InterruptedException e) {
 					// Nothing there
 				}
 				System.out.println("	-> Echo message wrote by client 2 !");
@@ -336,7 +336,7 @@ public class TestChannel {
 						number_of_bytes_wrote += serv_channel.write(byte_message_received1, number_of_bytes_wrote,
 								byte_message_sent1.length - number_of_bytes_wrote);
 					}
-				} catch (DisconnectedException e) {
+				} catch (DisconnectedException | InterruptedException e) {
 					// Nothing there
 				}
 				System.out.println("	-> Echo message (from client 1) wrote by server !");
@@ -360,7 +360,7 @@ public class TestChannel {
 						number_of_bytes_wrote += serv_channel.write(byte_message_received2, number_of_bytes_wrote,
 								byte_message_sent2.length - number_of_bytes_wrote);
 					}
-				} catch (DisconnectedException e) {
+				} catch (DisconnectedException | InterruptedException e) {
 					// Nothing there
 				}
 				System.out.println("	-> Echo message (from client 2) wrote by server !");
@@ -445,7 +445,7 @@ public class TestChannel {
 					receive(msg_received, c);
 
 					c.disconnect();
-				} catch (DisconnectedException e) {
+				} catch (DisconnectedException | InterruptedException e) {
 					e.printStackTrace();
 				}
 			}
@@ -470,7 +470,7 @@ public class TestChannel {
 					send(msg_get, c);
 
 					c.disconnect();
-				} catch (DisconnectedException | TimeoutException e) {
+				} catch (DisconnectedException | TimeoutException | InterruptedException e) {
 					// Nothing there
 				}
 			}
@@ -509,7 +509,7 @@ public class TestChannel {
 					b1.connect("Device2", 6969);
 					throw new IllegalStateException("	-> Aucun timeout n'a été levé...");
 
-				} catch (NullPointerException | IllegalStateException e) {
+				} catch (InterruptedException | NullPointerException | IllegalStateException e) {
 					e.printStackTrace();
 					System.exit(-1);
 				} catch (TimeoutException e) {

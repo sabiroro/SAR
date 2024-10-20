@@ -6,6 +6,7 @@ import task2.implementation.API.QueueBroker;
 import task2.implementation.API.Task;
 import task2.implementation.broker.BrokerImpl;
 import task2.implementation.broker.BrokerManager;
+import task2.implementation.broker.DisconnectedException;
 import task2.implementation.broker.TaskImpl;
 import task2.implementation.queue.QueueBrokerImpl;
 
@@ -91,7 +92,7 @@ public class TestQueue {
 
 		Broker b1 = new BrokerImpl("Client");
 		Broker b2 = new BrokerImpl("Server");
-		
+
 		QueueBroker qb1 = new QueueBrokerImpl(b1);
 		Task t1 = new TaskImpl(qb1, client_runnable(qb1, port, "Server", "Je suis le message client ", times, true));
 
@@ -115,7 +116,7 @@ public class TestQueue {
 		for (int i = 0; i < number_of_client; i++) {
 			Broker b1 = new BrokerImpl("Client " + (i + 1));
 			Broker b2 = new BrokerImpl("Server " + (i + 1));
-			
+
 			QueueBroker qb1 = new QueueBrokerImpl(b1);
 			task_created[2 * i] = new TaskImpl(qb1,
 					client_runnable(qb1, port + i, "Server " + (i + 1), "Je suis le message client ", times, true));
@@ -154,6 +155,7 @@ public class TestQueue {
 		}
 
 		server_task.interrupt();
+		server_task.join();
 
 		System.out.println("Test 4 done !\n");
 	}
@@ -213,7 +215,7 @@ public class TestQueue {
 						mq.send(bytes_received, 0, bytes_received.length);
 					}
 
-				} catch (Exception e) {
+				} catch (InterruptedException | DisconnectedException e) {
 					e.printStackTrace();
 					System.exit(-1);
 				} finally {
@@ -239,7 +241,12 @@ public class TestQueue {
 						mq.send(bytes_received, 0, bytes_received.length);
 					}
 
-					catch (Exception e) {
+					catch (InterruptedException e) {
+						if (mq != null)
+							mq.close();
+						System.out.println("	-> Server stopped successfully !");
+						return;
+					} catch (DisconnectedException e) {
 						e.printStackTrace();
 						System.exit(-1);
 					} finally {

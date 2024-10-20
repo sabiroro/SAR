@@ -4,18 +4,19 @@ import java.util.HashMap;
 import java.util.concurrent.TimeoutException;
 
 import task2.implementation.API.Channel;
-import task2.implementation.broker.BrokerManager;
 import task2.implementation.broker.DisconnectedException;
 import task3.implementation.API.MessageQueue;
 import task3.implementation.API.QueueBroker;
+import task3.implementation.event.QueueBrokerManager;
 
 public class QueueBrokerImpl extends QueueBroker {
-	private final int PORT_BACKLOG = 5; // Represents the maximum waiting queue to an accepting port
+	// private final int PORT_BACKLOG = 5; // Represents the maximum waiting queue
+	// to an accepting port
 	private HashMap<Integer, Port> ports_list;
 
 	public QueueBrokerImpl(String name) throws Exception {
 		super(name);
-		// task = new task3.implementation.event.TaskImpl();
+		QueueBrokerManager.self.put(name, this);
 		ports_list = new HashMap<>();
 	}
 
@@ -31,10 +32,12 @@ public class QueueBrokerImpl extends QueueBroker {
 			@Override
 			public void run() {
 				try {
-					while (port_object.is_active) {
+					while (port_object.is_active) { // && port_object.getBacklog() <= PORT_BACKLOG
 						Channel channel = broker.accept(port);
 						task3.implementation.API.Task task = new task3.implementation.event.TaskImpl();
-						MessageQueue msg_queue = new MessageQueueImpl(channel, task);
+//						MessageQueue msg_queue = new MessageQueueImpl(channel, port_object, ((ChannelImpl) channel).remote_channel);
+						MessageQueue msg_queue = new MessageQueueImpl(channel);
+
 						task.post(new Runnable() {
 							@Override
 							public void run() {
@@ -43,14 +46,19 @@ public class QueueBrokerImpl extends QueueBroker {
 						});
 					}
 				} catch (DisconnectedException e) {
-					System.out.println("caca");
+					// Nothing there
+
+				} catch (InterruptedException e) {
+					// System.out.println(" --> Bind task interrupted successfully ! Port : " +
+					// port);
 				}
 			}
 		};
 
-		task2.implementation.API.Task t = new task2.implementation.broker.TaskImpl(this.broker, r, "Bind thread"); // Create and launch task
+		// Create and launch task
+		task2.implementation.API.Task t = new task2.implementation.broker.TaskImpl(this.broker, r, "Bind thread");
 		port_object.bind_task = t;
-		
+
 		return true;
 	}
 
@@ -69,8 +77,8 @@ public class QueueBrokerImpl extends QueueBroker {
 
 	@Override
 	public boolean connect(String name, int port, ConnectListener listener) throws TimeoutException {
-		if (BrokerManager.self.get(name) == null || ports_list.containsKey((Integer) port)) // Target broker
-																							// doesn't exist
+		if (QueueBrokerManager.self.get(name) == null || ports_list.containsKey((Integer) port)) // Target broker
+			// doesn't exist
 			return false;
 
 		Port port_object = new Port(port, true);
@@ -83,16 +91,23 @@ public class QueueBrokerImpl extends QueueBroker {
 				try {
 					Channel channel = broker.connect(name, port);
 					task3.implementation.API.Task task = new task3.implementation.event.TaskImpl();
-					MessageQueue msg_queue = new MessageQueueImpl(channel, task);
+
+//					QueueBrokerImpl remote_qb = QueueBrokerManager.self.get(name);
+//					Port remote_accepting_port = remote_qb.ports_list.get((Integer) port);
+//					remote_accepting_port.addBacklog(channel);
+//					MessageQueue msg_queue = new MessageQueueImpl(channel, remote_accepting_port);
+
+					MessageQueue msg_queue = new MessageQueueImpl(channel);
+
 					task.post(new Runnable() {
 						@Override
 						public void run() {
 							listener.connected(msg_queue);
 						}
 					});
-				} catch (TimeoutException | DisconnectedException e) {
+				} catch (TimeoutException | DisconnectedException | InterruptedException e) {
 					task3.implementation.API.Task task = new task3.implementation.event.TaskImpl();
-					ports_list.remove((Integer) port);// TODO
+					ports_list.remove((Integer) port);
 					task.post(new Runnable() {
 						@Override
 						public void run() {

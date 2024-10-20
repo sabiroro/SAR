@@ -23,7 +23,7 @@ public class BrokerImpl extends Broker {
 	}
 
 	@Override
-	public Channel accept(int port) throws DisconnectedException {
+	public Channel accept(int port) throws DisconnectedException, InterruptedException {
 		RdV rdv = null;
 		synchronized (rendez_vous) {
 			rdv = getRendezVous(port);
@@ -39,7 +39,7 @@ public class BrokerImpl extends Broker {
 	}
 
 	@Override
-	public Channel connect(String name, int port) throws TimeoutException {
+	public Channel connect(String name, int port) throws TimeoutException, InterruptedException {
 		BrokerImpl target_broker = BrokerManager.self.get(name);
 
 		// The target broker doesn't exist yet
@@ -63,14 +63,14 @@ public class BrokerImpl extends Broker {
 		try {
 			executor.shutdown(); // Deny new connections
 			channel = future.get(WAITING_TIME, TimeUnit.SECONDS); // Get result after a maximum waiting time
-		} catch (InterruptedException | ExecutionException e) {
+		} catch (ExecutionException e) {
 			e.printStackTrace();
 		}
 		
 		return channel;
 	}
 
-	private Channel _connect(BrokerImpl broker, int port) {
+	private Channel _connect(BrokerImpl broker, int port) throws InterruptedException {
 		RdV rdv = null;
 		synchronized (rendez_vous) {
 			rdv = getRendezVous(port);

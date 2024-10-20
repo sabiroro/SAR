@@ -8,7 +8,7 @@ public class ChannelImpl extends Channel {
 	int port;
 	boolean is_disconnected;
 	boolean is_dangling; // True if the opposite channel is disconnected, false otherwise
-	ChannelImpl remote_channel;
+	public ChannelImpl remote_channel;
 	CircularBuffer in; // Buffer to write (for remote broker)
 	CircularBuffer out; // Buffer to read (from remote broker)
 

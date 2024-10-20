@@ -15,8 +15,8 @@ public class TaskImpl extends Task {
 
 	@Override
 	public void post(Runnable r) {
-		if (killed())
-			return;
+		//if (killed())
+		//	return;
 
 		this.runnable = r;
 		pump.post(r);
@@ -24,14 +24,16 @@ public class TaskImpl extends Task {
 
 	@Override
 	public void kill() {
-		if (!killed()) {
-			pump.queue.remove(runnable);
-			is_killed = true;
-		}
+		throw new IllegalStateException("NYI -> ask teacher");
+//		if (!killed()) {
+//			pump.queue.remove(runnable);
+//			is_killed = true;
+//		}
 	}
 
 	@Override
 	public boolean killed() {
-		return is_killed;
+		throw new IllegalStateException("NYI -> ask teacher");
+//		return is_killed;
 	}
 }

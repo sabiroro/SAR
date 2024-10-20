@@ -13,7 +13,7 @@ public abstract class Broker {
 		this.broker = this;
 	};
 
-	public abstract Channel accept(int port) throws DisconnectedException;
+	public abstract Channel accept(int port) throws DisconnectedException, InterruptedException;
 
-	public abstract Channel connect(String name, int port) throws TimeoutException;
+	public abstract Channel connect(String name, int port) throws TimeoutException, InterruptedException;
 }

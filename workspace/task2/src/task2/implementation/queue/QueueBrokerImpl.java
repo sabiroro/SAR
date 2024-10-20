@@ -19,14 +19,14 @@ public class QueueBrokerImpl extends QueueBroker {
 	}
 
 	@Override
-	public MessageQueue accept(int port) throws DisconnectedException {
+	public MessageQueue accept(int port) throws DisconnectedException, InterruptedException {
 		Channel mc = super.broker.accept(port);
 		MessageQueue mq = new MessageQueueImpl((Channel) mc);
 		return mq;
 	}
 
 	@Override
-	public MessageQueue connect(String name, int port) throws TimeoutException {
+	public MessageQueue connect(String name, int port) throws TimeoutException, InterruptedException {
 		Channel mc = super.broker.connect(name, port);
 		MessageQueue mq = new MessageQueueImpl((Channel) mc);
 		return mq;

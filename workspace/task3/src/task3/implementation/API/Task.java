@@ -1,11 +1,10 @@
 package task3.implementation.API;
 
-public abstract class Task extends Thread {
+public abstract class Task {
 	public abstract void post(Runnable r);
 
 	public static Task task() {
-		Task t = (Task) Thread.currentThread();
-		return t;
+		throw new IllegalStateException("NYI -> ask teacher");
 	}
 
 	public abstract void kill();

@@ -15,7 +15,7 @@ public abstract class QueueBroker {
 
 	public abstract String name();
 
-	public abstract MessageQueue accept(int port) throws DisconnectedException;
+	public abstract MessageQueue accept(int port) throws DisconnectedException, InterruptedException;
 
-	public abstract MessageQueue connect(String name, int port) throws TimeoutException;
+	public abstract MessageQueue connect(String name, int port) throws TimeoutException, InterruptedException;
 }
