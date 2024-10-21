@@ -28,16 +28,16 @@ public class TestEvent {
 
 	public static void main(String[] args) {
 		try {
-//			clean_previous_test();
-//			test1();
-//			clean_previous_test();
-//			test2(1, 1);
-//			clean_previous_test();
-//			test2(10, 2);
-//			clean_previous_test();
-//			test3(100);
-//			clean_previous_test();
-//			test4();
+			clean_previous_test();
+			test1();
+			clean_previous_test();
+			test2(1, 1);
+			clean_previous_test();
+			test2(10, 2);
+			clean_previous_test();
+			test3(100);
+			clean_previous_test();
+			test4();
 			// clean_previous_test();
 			// test5();
 			clean_previous_test();

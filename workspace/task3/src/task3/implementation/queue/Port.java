@@ -24,20 +24,14 @@ public class Port {
 		this.bind_task = null;
 	}
 
-	public synchronized void addBacklog(Channel channel) {
-		if (!client_channel_connected.contains(channel)) {
-			client_channel_connected.add(channel);
-			backlog++;
-			notifyAll();
-		}
+	public synchronized void addBacklog() {
+		backlog++;
+		notifyAll();
 	}
 
-	public synchronized void subBacklog(Channel channel) {
-		if (client_channel_connected.contains(channel)) {
-			client_channel_connected.remove(channel);
-			backlog--;
-			notifyAll();
-		}
+	public synchronized void subBacklog() {
+		backlog--;
+		notifyAll();
 	}
 
 	public synchronized int getBacklog() {

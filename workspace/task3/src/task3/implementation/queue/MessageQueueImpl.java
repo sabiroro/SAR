@@ -1,7 +1,6 @@
 package task3.implementation.queue;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 import task2.implementation.API.Channel;
 import task2.implementation.broker.DisconnectedException;
@@ -11,26 +10,11 @@ import task3.implementation.event.QueueBrokerManager;
 
 public class MessageQueueImpl extends MessageQueue {
 	private Channel channel;
-//	private Port accepting_port; // Allows to manage accepting port's backlog on remote
-//	private Channel connecting_channel; // Allows to server to remember the connecting client's channel
 	private Listener listener;
 
 	public MessageQueueImpl(Channel channel) throws DisconnectedException {
 		this.channel = channel;
 	}
-	
-//	public MessageQueueImpl(Channel channel, Port accepting_port) throws DisconnectedException {
-//		this.channel = channel;
-//		this.accepting_port = accepting_port;
-//		this.connecting_channel = channel;
-//	}
-//
-//	public MessageQueueImpl(Channel channel, Port accepting_port, Channel connecting_channel)
-//			throws DisconnectedException {
-//		this.channel = channel;
-//		this.accepting_port = accepting_port;
-//		this.connecting_channel = connecting_channel;
-//	}
 
 	@Override
 	public void setListener(Listener l) {
@@ -40,18 +24,18 @@ public class MessageQueueImpl extends MessageQueue {
 
 	@Override
 	public boolean send(byte[] bytes) {
-		byte[] bytes_msg = new byte[bytes.length]; 
+		byte[] bytes_msg = new byte[bytes.length];
 		System.arraycopy(bytes, 0, bytes_msg, 0, bytes.length);
-		
+
 		Message msg = new Message(bytes_msg);
 		return send(msg);
 	}
 
 	@Override
 	public boolean send(byte[] bytes, int offset, int length) {
-		byte[] bytes_msg = new byte[bytes.length - offset]; 
+		byte[] bytes_msg = new byte[bytes.length - offset];
 		System.arraycopy(bytes, offset, bytes_msg, 0, bytes.length - offset);
-		
+
 		Message msg = new Message(bytes_msg, offset, bytes.length);
 		return send(msg);
 	}
@@ -67,14 +51,6 @@ public class MessageQueueImpl extends MessageQueue {
 					@Override
 					public void run() {
 						listener.closed();
-
-//						// We post these two lines on the pump to ensure that channel is closed by
-//						// client side
-//						if (!accepting_port.is_connecting_port)
-//							accepting_port.subBacklog(connecting_channel);
-//
-//						else
-//							throw new IllegalAccessError("The port must be accepting");
 					}
 				});
 			}
@@ -145,7 +121,7 @@ public class MessageQueueImpl extends MessageQueue {
 				try {
 					_send(size_in_bytes, 0, Integer.BYTES); // Send size
 					_send(msg.bytes, msg.offset, msg.length); // Send message
-					
+
 					task3.implementation.API.Task task_pump = new task3.implementation.event.TaskImpl();
 					task_pump.post(new Runnable() {
 						@Override

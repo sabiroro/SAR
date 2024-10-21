@@ -10,8 +10,7 @@ import task3.implementation.API.QueueBroker;
 import task3.implementation.event.QueueBrokerManager;
 
 public class QueueBrokerImpl extends QueueBroker {
-	// private final int PORT_BACKLOG = 5; // Represents the maximum waiting queue
-	// to an accepting port
+//	private final int PORT_BACKLOG = 5; // Represents the maximum waiting queue to an accepting port
 	private HashMap<Integer, Port> ports_list;
 
 	public QueueBrokerImpl(String name) throws Exception {
@@ -32,10 +31,9 @@ public class QueueBrokerImpl extends QueueBroker {
 			@Override
 			public void run() {
 				try {
-					while (port_object.is_active) { // && port_object.getBacklog() <= PORT_BACKLOG
+					while (port_object.is_active) {
 						Channel channel = broker.accept(port);
 						task3.implementation.API.Task task = new task3.implementation.event.TaskImpl();
-//						MessageQueue msg_queue = new MessageQueueImpl(channel, port_object, ((ChannelImpl) channel).remote_channel);
 						MessageQueue msg_queue = new MessageQueueImpl(channel);
 
 						task.post(new Runnable() {
@@ -77,10 +75,16 @@ public class QueueBrokerImpl extends QueueBroker {
 
 	@Override
 	public boolean connect(String name, int port, ConnectListener listener) throws TimeoutException {
-		if (QueueBrokerManager.self.get(name) == null) // Target broker
+		QueueBrokerImpl remote_qb = QueueBrokerManager.self.get(name);
+		if (remote_qb == null) // Target broker
 			// doesn't exist
 			return false;
 
+//		Port remote_port = remote_qb.ports_list.get((Integer) port);
+//		if (remote_port.getBacklog() > PORT_BACKLOG)
+//			return false;
+		
+		
 		Port port_object = new Port(port, true);
 		ports_list.put(port, port_object);
 
@@ -89,14 +93,10 @@ public class QueueBrokerImpl extends QueueBroker {
 			@Override
 			public void run() {
 				try {
+//					remote_port.addBacklog();
 					Channel channel = broker.connect(name, port);
+//					remote_port.subBacklog();
 					task3.implementation.API.Task task = new task3.implementation.event.TaskImpl();
-
-//					QueueBrokerImpl remote_qb = QueueBrokerManager.self.get(name);
-//					Port remote_accepting_port = remote_qb.ports_list.get((Integer) port);
-//					remote_accepting_port.addBacklog(channel);
-//					MessageQueue msg_queue = new MessageQueueImpl(channel, remote_accepting_port);
-
 					MessageQueue msg_queue = new MessageQueueImpl(channel);
 
 					task.post(new Runnable() {
