@@ -1,6 +1,7 @@
 package task3.implementation.queue;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import task2.implementation.API.Channel;
 import task2.implementation.broker.DisconnectedException;
@@ -39,13 +40,19 @@ public class MessageQueueImpl extends MessageQueue {
 
 	@Override
 	public boolean send(byte[] bytes) {
-		Message msg = new Message(bytes);
+		byte[] bytes_msg = new byte[bytes.length]; 
+		System.arraycopy(bytes, 0, bytes_msg, 0, bytes.length);
+		
+		Message msg = new Message(bytes_msg);
 		return send(msg);
 	}
 
 	@Override
 	public boolean send(byte[] bytes, int offset, int length) {
-		Message msg = new Message(bytes, 0, bytes.length);
+		byte[] bytes_msg = new byte[bytes.length - offset]; 
+		System.arraycopy(bytes, offset, bytes_msg, 0, bytes.length - offset);
+		
+		Message msg = new Message(bytes_msg, offset, bytes.length);
 		return send(msg);
 	}
 
@@ -138,6 +145,14 @@ public class MessageQueueImpl extends MessageQueue {
 				try {
 					_send(size_in_bytes, 0, Integer.BYTES); // Send size
 					_send(msg.bytes, msg.offset, msg.length); // Send message
+					
+					task3.implementation.API.Task task_pump = new task3.implementation.event.TaskImpl();
+					task_pump.post(new Runnable() {
+						@Override
+						public void run() {
+							listener.sent(msg.bytes);
+						}
+					});
 				} catch (DisconnectedException e) {
 					// Nothing there
 				}

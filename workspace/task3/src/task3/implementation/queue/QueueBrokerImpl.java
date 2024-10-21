@@ -77,7 +77,7 @@ public class QueueBrokerImpl extends QueueBroker {
 
 	@Override
 	public boolean connect(String name, int port, ConnectListener listener) throws TimeoutException {
-		if (QueueBrokerManager.self.get(name) == null || ports_list.containsKey((Integer) port)) // Target broker
+		if (QueueBrokerManager.self.get(name) == null) // Target broker
 			// doesn't exist
 			return false;
 

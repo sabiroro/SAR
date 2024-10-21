@@ -4,6 +4,8 @@ public abstract class MessageQueue {
 	public interface Listener {
 		public void received(byte[] msg);
 
+		public void sent(byte[] msg);
+		
 		public void closed();
 	}
 

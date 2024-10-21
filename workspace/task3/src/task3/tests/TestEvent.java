@@ -28,18 +28,20 @@ public class TestEvent {
 
 	public static void main(String[] args) {
 		try {
-			clean_previous_test();
-			test1();
-			clean_previous_test();
-			test2(1, 1);
-			clean_previous_test();
-			test2(10, 2);
-			clean_previous_test();
-			test3(100);
-			clean_previous_test();
-			test4();
 //			clean_previous_test();
-			//test5();
+//			test1();
+//			clean_previous_test();
+//			test2(1, 1);
+//			clean_previous_test();
+//			test2(10, 2);
+//			clean_previous_test();
+//			test3(100);
+//			clean_previous_test();
+//			test4();
+			// clean_previous_test();
+			// test5();
+			clean_previous_test();
+			test6();
 
 			stop_test();
 			System.out.println("That's all folks");
@@ -71,6 +73,11 @@ public class TestEvent {
 					}
 
 					@Override
+					public void sent(byte[] msg) {
+						// Nothing there
+					}
+
+					@Override
 					public void closed() {
 						System.out.println("	-> Connection closed (client)");
 						sm.release(); // Allows to end the test
@@ -94,20 +101,11 @@ public class TestEvent {
 					@Override
 					public void received(byte[] msg) {
 						queue.send(msg);
-						
-						// Unbind accepting port "for fun" and to test after
-						Thread t = new Thread(new Runnable() {
-							@Override
-							public void run() {
-								try {
-									Thread.sleep(1000); // Wait 1 second to wait the message is sent
-									queue.close();
-								} catch (InterruptedException e) {
-									// Nothing there
-								}
-							}
-						});
-						t.start();
+					}
+
+					@Override
+					public void sent(byte[] msg) {
+						queue.close();
 					}
 
 					@Override
@@ -138,6 +136,11 @@ public class TestEvent {
 					public void received(byte[] msg) {
 						System.out.println("	-> Echo message (" + client.name + ") : " + new String(msg));
 						queue.close();
+					}
+
+					@Override
+					public void sent(byte[] msg) {
+						// Nothing there
 					}
 
 					@Override
@@ -190,22 +193,12 @@ public class TestEvent {
 					@Override
 					public void received(byte[] msg) {
 						queue.send(msg);
+					}
 
-						if (need_to_unbind) {
-							// Unbind accepting port "for fun" and to test after
-							Thread t = new Thread(new Runnable() {
-								@Override
-								public void run() {
-									try {
-										Thread.sleep(1000); // Wait 1 second to wait the message is sent
-										queue.close();
-									} catch (InterruptedException e) {
-										// Nothing there
-									}
-								}
-							});
-							t.start();
-						}
+					@Override
+					public void sent(byte[] msg) {
+						if (need_to_unbind)
+							queue.close();
 					}
 
 					@Override
@@ -328,7 +321,7 @@ public class TestEvent {
 
 		System.out.println("Test 4 done !\n");
 	}
-	
+
 	// Test the return statement of method connection
 	public static void test5() throws Exception {
 		throw new IllegalStateException("NYI -> ask teacher");
@@ -385,4 +378,77 @@ public class TestEvent {
 //		sm.acquire();
 //		System.out.println("Test 5 done !\n");
 	}
+	
+
+	// Try to connect a broker to himself
+	public static void test6() throws Exception {
+		System.out.println("Test 6 in progress...");
+		Semaphore sm = new Semaphore(-1);
+		
+		QueueBroker qb = new QueueBrokerImpl("client");
+		int port  = 123456789;
+		
+		qb.bind(port, new AcceptListener() {
+			
+			@Override
+			public void accepted(MessageQueue queue) {
+				queue.setListener(new Listener() {
+					
+					@Override
+					public void sent(byte[] msg) {
+						// Nothing there
+					}
+					
+					@Override
+					public void received(byte[] msg) {
+						System.out.println("    -> Message received (from accept) : " + new String(msg));
+						queue.close();
+					}
+					
+					@Override
+					public void closed() {
+						qb.unbind(port);
+						System.out.println("    -> Port unbinded");
+						sm.release();
+					}
+				});
+				
+				queue.send("Hello me ! That's me !!!".getBytes());
+			}
+		});
+		
+		qb.connect("client", port, new ConnectListener() {
+			
+			@Override
+			public void refused() {
+				System.out.println("     -> Connection refused !!");
+			}
+			
+			@Override
+			public void connected(MessageQueue queue) {
+				queue.setListener(new Listener() {
+					
+					@Override
+					public void sent(byte[] msg) {
+						queue.close();
+					}
+					
+					@Override
+					public void received(byte[] msg) {
+						System.out.println("    -> Message received (from connect) : " + new String(msg));
+						queue.send(msg);
+					}
+					
+					@Override
+					public void closed() {
+						System.out.println("    -> Connection closed (from connect)");
+						sm.release();
+					}
+				});
+			}
+		});
+		
+		sm.acquire();
+		System.out.println("Test 6 done !\n");
+}
 }
